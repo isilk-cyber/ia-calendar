@@ -361,18 +361,7 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
     <button class="fb" data-f="philanthropy" onclick="setFilter(this,'philanthropy')"><div class="fd" style="background:var(--pk)"></div>Philanthropy</button>
     </div>
     <span class="sbl">Team</span>
-    <div id="sidebar-team-section"><button class="fb" data-f="Jessica Pothering" onclick="setFilter(this,'Jessica Pothering')"><div class="fd" style="background:#7e9cc8"></div>Jessica Pothering<span class="fc" id="cnt-Jessica Pothering"></span></button>
-    <button class="fb" data-f="Amy Cortese" onclick="setFilter(this,'Amy Cortese')"><div class="fd" style="background:#7ec8b4"></div>Amy Cortese<span class="fc" id="cnt-Amy Cortese"></span></button>
-    <button class="fb" data-f="David Bank" onclick="setFilter(this,'David Bank')"><div class="fd" style="background:#9c7ec8"></div>David Bank<span class="fc" id="cnt-David Bank"></span></button>
-    <button class="fb" data-f="Cesar Chavez" onclick="setFilter(this,'Cesar Chavez')"><div class="fd" style="background:#c87e7e"></div>Cesar Chavez<span class="fc" id="cnt-Cesar Chavez"></span></button>
-    <button class="fb" data-f="Zuleyma Bebell" onclick="setFilter(this,'Zuleyma Bebell')"><div class="fd" style="background:#8ecac8"></div>Zuleyma Bebell<span class="fc" id="cnt-Zuleyma Bebell"></span></button>
-    <button class="fb" data-f="Dennis Price" onclick="setFilter(this,'Dennis Price')"><div class="fd" style="background:#c8a87e"></div>Dennis Price<span class="fc" id="cnt-Dennis Price"></span></button>
-    <button class="fb" data-f="Erik Stein" onclick="setFilter(this,'Erik Stein')"><div class="fd" style="background:#c87eac"></div>Erik Stein<span class="fc" id="cnt-Erik Stein"></span></button>
-    <button class="fb" data-f="Roody Senatus" onclick="setFilter(this,'Roody Senatus')"><div class="fd" style="background:#a8c87e"></div>Roody Senatus<span class="fc" id="cnt-Roody Senatus"></span></button>
-    <button class="fb" data-f="Lucy Ngige" onclick="setFilter(this,'Lucy Ngige')"><div class="fd" style="background:#c8c07e"></div>Lucy Ngige<span class="fc" id="cnt-Lucy Ngige"></span></button>
-    <button class="fb" data-f="Danielle Rossingh" onclick="setFilter(this,'Danielle Rossingh')"><div class="fd" style="background:#c8a0b4"></div>Danielle Rossingh<span class="fc" id="cnt-Danielle Rossingh"></span></button>
-    <button class="fb" data-f="Brian Walsh" onclick="setFilter(this,'Brian Walsh')"><div class="fd" style="background:#90a8c8"></div>Brian Walsh<span class="fc" id="cnt-Brian Walsh"></span></button>
-    <button class="fb" data-f="Joe Whitwell" onclick="setFilter(this,'Joe Whitwell')"><div class="fd" style="background:#b4a87e"></div>Joe Whitwell<span class="fc" id="cnt-Joe Whitwell"></span></button>
+    <div id="sidebar-team-section">
         </div>
     <span class="sbl">Stats</span>
     <div class="sg">
@@ -607,35 +596,40 @@ function editFromDetail(){const id=detailEventId;closeDetail();const e=events.fi
 function deleteFromDetail(){const id=detailEventId;closeDetail();if(id)deleteItem(id);}
 
 async function loadConfig(){
+  // Team is always sourced from the hardcoded TM/TC constants — never from DB.
+  // This ensures full names and correct colors survive across updates.
+  dynamicTeam=TM.map(n=>({name:n,color:TC[n]||'#888'}));
+  // Only topics can be customised and saved to DB/localStorage
   if(DB_OK){
     try{
-      const rows=await dbF('ia_config?order=key.asc');
+      const rows=await dbF('ia_config?key=eq.topics');
       if(rows&&rows.length){
-        rows.forEach(r=>{
-          if(r.key==='team')dynamicTeam=JSON.parse(r.value);
-          if(r.key==='topics')dynamicTopics=JSON.parse(r.value);
-        });
+        const r=rows[0];
+        if(r&&r.value)dynamicTopics=JSON.parse(r.value);
         return;
       }
     }catch(e){console.warn('Config load failed, using defaults');}
   }
   const saved=localStorage.getItem(CFG_KEY);
-  if(saved){const c=JSON.parse(saved);if(c.team)dynamicTeam=c.team;if(c.topics)dynamicTopics=c.topics;}
+  if(saved){
+    try{
+      const c=JSON.parse(saved);
+      if(c.topics)dynamicTopics=c.topics;
+    }catch(e){}
+  }
 }
 
 async function persistConfig(){
-  const payload={team:dynamicTeam,topics:dynamicTopics};
+  // Only persist topics — team is always sourced from hardcoded TM/TC
   if(DB_OK){
     try{
-      await dbF('ia_config?key=eq.team',{method:'DELETE'});
       await dbF('ia_config?key=eq.topics',{method:'DELETE'});
       await dbF('ia_config',{method:'POST',prefer:'return=minimal',body:JSON.stringify([
-        {key:'team',value:JSON.stringify(dynamicTeam)},
         {key:'topics',value:JSON.stringify(dynamicTopics)}
       ])});
     }catch(e){console.warn('Config save failed');}
   }
-  localStorage.setItem(CFG_KEY,JSON.stringify(payload));
+  localStorage.setItem(CFG_KEY,JSON.stringify({topics:dynamicTopics}));
 }
 
 let settingsTab='team';
@@ -758,8 +752,10 @@ function renderSidebarTeam(){
   if(!container)return;
   container.innerHTML=dynamicTeam.map(t=>{
     const cnt=events.filter(e=>(e.team||[]).includes(t.name)).length;
+    const ini=getInitials(t.name);
     return`<button class="fb${curF===t.name?' active':''}" data-f="${t.name}" onclick="setFilter(this,'${t.name}')">
-      <div class="fd" style="background:${t.color}"></div>${t.name}
+      <span style="width:16px;height:16px;border-radius:50%;background:${t.color};color:#fff;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</span>
+      ${t.name}
       <span class="fc">${cnt||''}</span>
     </button>`;
   }).join('');
@@ -802,6 +798,7 @@ async function init(){
   renderSidebarTeam();
   renderSidebarTopics();
   applyFilters();
+  updCounts();
 }
 
 function setFilter(el,f){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');curF=f;applyFilters();}
@@ -831,7 +828,7 @@ function applyFilters(){
   }
   // Reset to current month when clearing filter
   if(curF==='all'&&q===''){calY=2026;calM=4;}
-  updCounts(); render();
+  render(); updCounts();
 }
 function updCounts(){
   const c=fn=>events.filter(fn).length;
