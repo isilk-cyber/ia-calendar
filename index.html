@@ -6,8 +6,51 @@
 <title>ImpactAlpha 2026 Calendar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<!-- SETTINGS MODAL -->
+<div class="settings-mo" id="settings-mo" onclick="maybeCloseSettings(event)">
+  <div class="settings-md">
+    <div class="settings-hdr">
+      <h3>&#9881; Settings</h3>
+      <button class="mc2" onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-tabs">
+      <button class="stab active" id="stab-team" onclick="switchSettingsTab('team')">Team members</button>
+      <button class="stab" id="stab-topics" onclick="switchSettingsTab('topics')">Topics</button>
+    </div>
+    <div class="settings-body">
+      <!-- TEAM TAB -->
+      <div id="stab-team-body">
+        <div class="settings-section">
+          <h4>Team members</h4>
+          <div class="item-list" id="team-list"></div>
+          <div class="add-row">
+            <input type="text" id="new-team-name" placeholder="Full name (e.g. Sarah Jones)" onkeydown="if(event.key==='Enter')addTeamMember()">
+            <button class="add-btn" onclick="addTeamMember()">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <!-- TOPICS TAB -->
+      <div id="stab-topics-body" style="display:none">
+        <div class="settings-section">
+          <h4>Topics / categories</h4>
+          <div class="item-list" id="topic-list"></div>
+          <div class="add-row">
+            <input type="text" id="new-topic-label" placeholder="Topic name (e.g. Housing)" onkeydown="if(event.key==='Enter')addTopic()">
+            <button class="add-btn" onclick="addTopic()">+ Add</button>
+          </div>
+          <p style="font-size:11px;color:var(--il);margin-top:.75rem">New topics are automatically assigned a color and added to all filters and the event form.</p>
+        </div>
+      </div>
+    </div>
+    <div class="settings-ftr">
+      <button class="btn-g" style="color:var(--im);border-color:var(--ru)" onclick="closeSettings()">Cancel</button>
+      <button class="btn-p" onclick="saveSettings()">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const SUPABASE_URL = "https://fgttyqdwrbcnheqimvfn.supabase.co";
+  const SUPABASE_URL = "https://fgttyqdwrbcnheqimvfn.supabase.co/rest/v1/";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZndHR5cWR3cmJjbmhlcWltdmZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NDIzMDgsImV4cCI6MjA5NDExODMwOH0.dsxMydGHYwZIWOb5oCgPmN3MH3IINLjTgVePz00tF-U";
 </script>
 <style>
@@ -72,9 +115,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .ce{display:flex;flex-direction:column;gap:1px}
 .chip{font-size:9px;padding:2px 4px;border-radius:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
 .chip:hover{opacity:.8}
-.chip-call{background:#d1f0e4;color:#085041;border-left:2px solid var(--gm)}
-.chip-ooo{background:#fde8c0;color:#633806;border-left:2px solid var(--am)}
-.chip-travel{background:#cfe0f5;color:#0C447C;border-left:2px solid var(--bl)}
+.chip-call{background:#085041;color:#fff;border-left:none}
+.chip-ooo{background:#633806;color:#fff;border-left:none}
+.chip-travel{background:#0C447C;color:#fff;border-left:none}
 .chip-climate{background:var(--gp);color:#0F6E56;border-left:2px solid var(--gm)}
 .chip-global{background:var(--bp);color:var(--bl);border-left:2px solid var(--bl)}
 .chip-inclusion{background:var(--pp);color:var(--pu);border-left:2px solid var(--pu)}
@@ -92,9 +135,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .lr{display:flex;gap:10px;padding:8px 12px;background:var(--wh);border:1px solid var(--ru);border-radius:var(--r);align-items:flex-start;position:relative;transition:border-color .1s,background .1s}
 .lr:hover{border-color:#ccc;background:var(--bg)}
 .lr.past{opacity:.5}
-.lr.tc{border-left:3px solid var(--gm);border-radius:0 var(--r) var(--r) 0}
-.lr.to{border-left:3px solid var(--am);border-radius:0 var(--r) var(--r) 0}
-.lr.tt{border-left:3px solid var(--bl);border-radius:0 var(--r) var(--r) 0}
+.lr.tc{border-left:4px solid #085041;border-radius:0 var(--r) var(--r) 0;background:#f8fdfb}
+.lr.to{border-left:4px solid #633806;border-radius:0 var(--r) var(--r) 0;background:#fffaf5}
+.lr.tt{border-left:4px solid #0C447C;border-radius:0 var(--r) var(--r) 0;background:#f5f8fd}
 .ldate{min-width:36px;text-align:center;flex-shrink:0}
 .lmon{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--if)}
 .lday{font-size:18px;font-weight:300;line-height:1}
@@ -112,8 +155,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .divl{display:flex;align-items:center;gap:8px;margin:1.1rem 0 .75rem}
 .divln{flex:1;height:1px;background:var(--ru)}
 .divlt{font-size:10px;color:var(--if);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
-/* Pills */
-.pl{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:500;white-space:nowrap;flex-shrink:0}
+/* Pills - TYPE (solid rectangle, uppercase) */
+.pl{font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600;white-space:nowrap;flex-shrink:0;letter-spacing:.03em;text-transform:uppercase}
+.pl-call{background:#085041;color:#fff}
+.pl-ooo{background:#633806;color:#fff}
+.pl-travel{background:#0C447C;color:#fff}
+/* Pills - TOPIC (rounded, softer) */
+.pl-topic{border-radius:20px;font-weight:500;text-transform:none;letter-spacing:0;font-size:9px;padding:2px 7px}
 .pl-climate{background:var(--gp);color:#0F6E56}
 .pl-inclusion{background:var(--pp);color:var(--pu)}
 .pl-global{background:var(--bp);color:var(--bl)}
@@ -121,10 +169,12 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .pl-energy{background:var(--ap);color:var(--am)}
 .pl-ownership{background:var(--cp);color:var(--co)}
 .pl-philanthropy{background:var(--kp);color:var(--pk)}
-.pl-call{background:var(--gp);color:#085041}
-.pl-ooo{background:var(--ap);color:#633806}
-.pl-travel{background:var(--bp);color:#0C447C}
-.pl-disc{background:#eaf3de;color:#3B6D11}
+/* Pills - PARTNER (gold star) */
+.pl-partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b;border-radius:4px;padding:2px 6px;font-weight:600;font-size:9px;text-transform:none;letter-spacing:0}
+/* Pills - DISCOUNT */
+.pl-disc{background:#eaf3de;color:#3B6D11;border-radius:20px;text-transform:none;letter-spacing:0;font-weight:500}
+/* Team avatar pills */
+.pl-team{width:18px;height:18px;border-radius:50%;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;padding:0;text-transform:uppercase;letter-spacing:0}
 /* Popover */
 .pop-ov{display:none;position:fixed;inset:0;z-index:150}
 .pop-ov.open{display:block}
@@ -173,11 +223,45 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 /* Partner event styling */
 .chip-partner{background:#fef3c7;color:#78350f;border-left:2px solid #f59e0b;font-weight:600}
 .chip-partner::before{content:'★ ';font-size:8px}
-.span-bar.partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b;border-top:2px solid #f59e0b}
+.span-bar.partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b;border-top:2px solid #f59e0b;font-weight:600}
 .span-bar.partner::before{content:'★ ';font-size:8px}
+.span-bar.chip-call{background:#085041;color:#fff;font-weight:600}
+.span-bar.chip-ooo{background:#633806;color:#fff;font-weight:600}
+.span-bar.chip-travel{background:#0C447C;color:#fff;font-weight:600}
 .pl-partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b}
 /* Cal cell: no bottom padding for event area, events handled in week rows */
 .cal-day-num-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1px}
+
+/* Settings panel */
+.settings-mo{display:none;position:fixed;inset:0;background:rgba(10,20,15,.5);z-index:300;align-items:center;justify-content:center}
+.settings-mo.open{display:flex}
+.settings-md{background:var(--wh);border-radius:var(--rl);width:560px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 56px rgba(0,0,0,.18);display:flex;flex-direction:column}
+.settings-hdr{padding:1rem 1.4rem .75rem;border-bottom:1px solid var(--ru);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.settings-hdr h3{font-size:14px;font-weight:500;color:var(--ink)}
+.settings-tabs{display:flex;gap:0;border-bottom:1px solid var(--ru);flex-shrink:0}
+.stab{padding:.6rem 1.25rem;font-size:12px;border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--im);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.stab.active{color:var(--gm);border-bottom-color:var(--gm);font-weight:500}
+.settings-body{padding:1.25rem 1.4rem;flex:1;overflow-y:auto}
+.settings-section{margin-bottom:1.5rem}
+.settings-section h4{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--il);margin-bottom:.75rem}
+.item-list{display:flex;flex-direction:column;gap:6px;margin-bottom:.75rem}
+.item-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--ru)}
+.item-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.item-color{width:20px;height:20px;border-radius:4px;flex-shrink:0;cursor:pointer;border:1px solid rgba(0,0,0,.1)}
+.item-name{flex:1;font-size:12px;font-weight:500;color:var(--ink)}
+.item-detail{font-size:11px;color:var(--il)}
+.item-del{background:transparent;border:none;color:var(--if);cursor:pointer;font-size:16px;padding:0 2px;line-height:1;transition:color .12s}
+.item-del:hover{color:#b91c1c}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-row input{flex:1;padding:7px 9px;font-size:12px;border:1px solid var(--ru);border-radius:var(--r);background:var(--bg);color:var(--ink);font-family:inherit;outline:none}
+.add-row input:focus{border-color:var(--gm)}
+.add-btn{background:var(--gm);color:#fff;border:none;border-radius:var(--r);padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.add-btn:hover{background:#19b882}
+.topic-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--ru)}
+.topic-swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.color-picker-wrap{position:relative}
+.color-picker-wrap input[type=color]{opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer;border:none}
+.settings-ftr{padding:.875rem 1.4rem;border-top:1px solid var(--ru);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -191,6 +275,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
   </div>
   <div class="header-right">
     <span class="save-st" id="sst"></span>
+    <button class="btn-g" onclick="openSettings()" title="Settings" style="padding:4px 8px">&#9881;</button>
     <div class="view-toggle">
       <button class="vbtn active" id="btn-cal" onclick="setView('cal')">Grid</button>
       <button class="vbtn" id="btn-list" onclick="setView('list')">List</button>
@@ -208,29 +293,35 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
     <button class="fb active" data-f="all" onclick="setFilter(this,'all')"><div class="fd" style="background:#ccc"></div>All<span class="fc" id="cnt-all"></span></button>
     <button class="fb" data-f="upcoming" onclick="setFilter(this,'upcoming')"><div class="fd" style="background:var(--gm)"></div>Upcoming<span class="fc" id="cnt-up"></span></button>
     <span class="sbl">Type</span>
-    <button class="fb" data-f="call" onclick="setFilter(this,'call')"><div class="fd" style="background:var(--gm)"></div>Calls<span class="fc" id="cnt-call"></span></button>
-    <button class="fb" data-f="travel" onclick="setFilter(this,'travel')"><div class="fd" style="background:var(--bl)"></div>Travel<span class="fc" id="cnt-travel"></span></button>
-    <button class="fb" data-f="ooo" onclick="setFilter(this,'ooo')"><div class="fd" style="background:var(--am)"></div>Out of office<span class="fc" id="cnt-ooo"></span></button>
-    <button class="fb" data-f="event" onclick="setFilter(this,'event')"><div class="fd" style="background:#ccc"></div>Events<span class="fc" id="cnt-event"></span></button>
-    <button class="fb" data-f="partner" onclick="setFilter(this,'partner')"><div class="fd" style="background:#f59e0b"></div>Partner events</button>
+    <button class="fb" data-f="call" onclick="setFilter(this,'call')"><span style="font-size:9px;background:#085041;color:#fff;padding:1px 5px;border-radius:3px;font-weight:600">CALL</span>Calls<span class="fc" id="cnt-call"></span></button>
+    <button class="fb" data-f="travel" onclick="setFilter(this,'travel')"><span style="font-size:9px;background:#0C447C;color:#fff;padding:1px 5px;border-radius:3px;font-weight:600">AWAY</span>Travel<span class="fc" id="cnt-travel"></span></button>
+    <button class="fb" data-f="ooo" onclick="setFilter(this,'ooo')"><span style="font-size:9px;background:#633806;color:#fff;padding:1px 5px;border-radius:3px;font-weight:600">OOO</span>Out of office<span class="fc" id="cnt-ooo"></span></button>
+    <button class="fb" data-f="event" onclick="setFilter(this,'event')"><div class="fd" style="background:#ccc"></div>All events<span class="fc" id="cnt-event"></span></button>
+    <button class="fb" data-f="partner" onclick="setFilter(this,'partner')"><span style="font-size:9px">★</span>Partner events</button>
     <button class="fb" data-f="nonpartner" onclick="setFilter(this,'nonpartner')"><div class="fd" style="background:#ccc"></div>Non-partner events</button>
-    <button class="fb" data-f="discount" onclick="setFilter(this,'discount')"><div class="fd" style="background:#639922"></div>Has discount</button>
+    <button class="fb" data-f="discount" onclick="setFilter(this,'discount')"><span style="font-size:9px">%</span>Has discount</button>
     <span class="sbl">Topic</span>
-    <button class="fb" data-f="climate" onclick="setFilter(this,'climate')"><div class="fd" style="background:#1D9E75"></div>Climate</button>
+    <div id="sidebar-topic-section"><button class="fb" data-f="climate" onclick="setFilter(this,'climate')"><div class="fd" style="background:#1D9E75"></div>Climate</button>
     <button class="fb" data-f="global" onclick="setFilter(this,'global')"><div class="fd" style="background:var(--bl)"></div>Global</button>
     <button class="fb" data-f="inclusion" onclick="setFilter(this,'inclusion')"><div class="fd" style="background:var(--pu)"></div>Inclusion</button>
     <button class="fb" data-f="ownership" onclick="setFilter(this,'ownership')"><div class="fd" style="background:var(--co)"></div>Ownership</button>
     <button class="fb" data-f="energy" onclick="setFilter(this,'energy')"><div class="fd" style="background:var(--am)"></div>Energy</button>
     <button class="fb" data-f="philanthropy" onclick="setFilter(this,'philanthropy')"><div class="fd" style="background:var(--pk)"></div>Philanthropy</button>
+    </div>
     <span class="sbl">Team</span>
-    <button class="fb" data-f="Jessica" onclick="setFilter(this,'Jessica')"><div class="fd" style="background:#7e9cc8"></div>Jessica<span class="fc" id="cnt-Jessica"></span></button>
-    <button class="fb" data-f="David" onclick="setFilter(this,'David')"><div class="fd" style="background:#9c7ec8"></div>David<span class="fc" id="cnt-David"></span></button>
-    <button class="fb" data-f="Cesar" onclick="setFilter(this,'Cesar')"><div class="fd" style="background:#c87e7e"></div>Cesar<span class="fc" id="cnt-Cesar"></span></button>
-    <button class="fb" data-f="Dennis" onclick="setFilter(this,'Dennis')"><div class="fd" style="background:#c8a87e"></div>Dennis<span class="fc" id="cnt-Dennis"></span></button>
-    <button class="fb" data-f="Amy" onclick="setFilter(this,'Amy')"><div class="fd" style="background:#7ec8b4"></div>Amy<span class="fc" id="cnt-Amy"></span></button>
-    <button class="fb" data-f="Lucy" onclick="setFilter(this,'Lucy')"><div class="fd" style="background:#c8c07e"></div>Lucy<span class="fc" id="cnt-Lucy"></span></button>
-    <button class="fb" data-f="Roody" onclick="setFilter(this,'Roody')"><div class="fd" style="background:#a8c87e"></div>Roody<span class="fc" id="cnt-Roody"></span></button>
-    <button class="fb" data-f="Erik" onclick="setFilter(this,'Erik')"><div class="fd" style="background:#c87eac"></div>Erik<span class="fc" id="cnt-Erik"></span></button>
+    <div id="sidebar-team-section"><button class="fb" data-f="Jessica Pothering" onclick="setFilter(this,'Jessica Pothering')"><div class="fd" style="background:#7e9cc8"></div>Jessica Pothering<span class="fc" id="cnt-Jessica Pothering"></span></button>
+    <button class="fb" data-f="Amy Cortese" onclick="setFilter(this,'Amy Cortese')"><div class="fd" style="background:#7ec8b4"></div>Amy Cortese<span class="fc" id="cnt-Amy Cortese"></span></button>
+    <button class="fb" data-f="David Bank" onclick="setFilter(this,'David Bank')"><div class="fd" style="background:#9c7ec8"></div>David Bank<span class="fc" id="cnt-David Bank"></span></button>
+    <button class="fb" data-f="Cesar Chavez" onclick="setFilter(this,'Cesar Chavez')"><div class="fd" style="background:#c87e7e"></div>Cesar Chavez<span class="fc" id="cnt-Cesar Chavez"></span></button>
+    <button class="fb" data-f="Zuleyma Bebell" onclick="setFilter(this,'Zuleyma Bebell')"><div class="fd" style="background:#8ecac8"></div>Zuleyma Bebell<span class="fc" id="cnt-Zuleyma Bebell"></span></button>
+    <button class="fb" data-f="Dennis Price" onclick="setFilter(this,'Dennis Price')"><div class="fd" style="background:#c8a87e"></div>Dennis Price<span class="fc" id="cnt-Dennis Price"></span></button>
+    <button class="fb" data-f="Erik Stein" onclick="setFilter(this,'Erik Stein')"><div class="fd" style="background:#c87eac"></div>Erik Stein<span class="fc" id="cnt-Erik Stein"></span></button>
+    <button class="fb" data-f="Roody Senatus" onclick="setFilter(this,'Roody Senatus')"><div class="fd" style="background:#a8c87e"></div>Roody Senatus<span class="fc" id="cnt-Roody Senatus"></span></button>
+    <button class="fb" data-f="Lucy Ngige" onclick="setFilter(this,'Lucy Ngige')"><div class="fd" style="background:#c8c07e"></div>Lucy Ngige<span class="fc" id="cnt-Lucy Ngige"></span></button>
+    <button class="fb" data-f="Danielle Rossingh" onclick="setFilter(this,'Danielle Rossingh')"><div class="fd" style="background:#c8a0b4"></div>Danielle Rossingh<span class="fc" id="cnt-Danielle Rossingh"></span></button>
+    <button class="fb" data-f="Brian Walsh" onclick="setFilter(this,'Brian Walsh')"><div class="fd" style="background:#90a8c8"></div>Brian Walsh<span class="fc" id="cnt-Brian Walsh"></span></button>
+    <button class="fb" data-f="Joe Whitwell" onclick="setFilter(this,'Joe Whitwell')"><div class="fd" style="background:#b4a87e"></div>Joe Whitwell<span class="fc" id="cnt-Joe Whitwell"></span></button>
+        </div>
     <span class="sbl">Stats</span>
     <div class="sg">
       <div class="sb"><div class="sn" id="s-total">&mdash;</div><div class="sl">Total</div></div>
@@ -292,6 +383,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
             <option value="ownership">Ownership</option><option value="philanthropy">Philanthropy</option>
             <option value="general">General</option>
           </select>
+          <script>document.addEventListener('DOMContentLoaded',()=>rebuildTopicSelect());</script>
         </div>
       </div>
       <div class="fr"><label>Location</label><input type="text" id="floc" placeholder="City, country or Online"></div>
@@ -314,10 +406,25 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 const TODAY=new Date('2026-05-11');
 const MNS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const TM=['Jessica','David','Cesar','Dennis','Amy','Lucy','Roody','Erik','Zuleyma'];
-const TC={Jessica:'#7e9cc8',David:'#9c7ec8',Cesar:'#c87e7e',Dennis:'#c8a87e',Amy:'#7ec8b4',Lucy:'#c8c07e',Roody:'#a8c87e',Erik:'#c87eac',Zuleyma:'#8ecac8'};
+const TM=['Jessica Pothering','Amy Cortese','David Bank','Cesar Chavez','Zuleyma Bebell','Dennis Price','Erik Stein','Roody Senatus','Lucy Ngige','Danielle Rossingh','Brian Walsh','Joe Whitwell'];
+const TC={'Jessica Pothering':'#7e9cc8','Amy Cortese':'#7ec8b4','David Bank':'#9c7ec8','Cesar Chavez':'#c87e7e','Zuleyma Bebell':'#8ecac8','Dennis Price':'#c8a87e','Erik Stein':'#c87eac','Roody Senatus':'#a8c87e','Lucy Ngige':'#c8c07e','Danielle Rossingh':'#c8a0b4','Brian Walsh':'#90a8c8','Joe Whitwell':'#b4a87e'};
 const TF=['climate','global','inclusion','energy','ownership','philanthropy','general'];
 const TL={climate:'Climate',global:'Global',inclusion:'Inclusion',energy:'Energy',ownership:'Ownership',philanthropy:'Philanthropy',general:'General',call:'Call',ooo:'Out of office',travel:'Travel'};
+
+// ── DYNAMIC CONFIG (editable via Settings panel) ──────────────────────────
+const DEFAULT_COLORS=['#7e9cc8','#9c7ec8','#c87e7e','#7ec8b4','#c8a87e','#8ecac8','#c87eac','#a8c87e','#c8c07e','#c8a0b4','#90a8c8','#b4a87e','#a0b4c8','#c8b4a0','#b4c8a0'];
+const TOPIC_PALETTE={climate:{bg:'var(--gp)',color:'#0F6E56',border:'var(--gm)'},global:{bg:'var(--bp)',color:'var(--bl)',border:'var(--bl)'},inclusion:{bg:'var(--pp)',color:'var(--pu)',border:'var(--pu)'},energy:{bg:'var(--ap)',color:'var(--am)',border:'var(--am)'},ownership:{bg:'var(--cp)',color:'var(--co)',border:'var(--co)'},philanthropy:{bg:'var(--kp)',color:'var(--pk)',border:'var(--pk)'},general:{bg:'var(--gy)',color:'var(--gr)',border:'#ccc'}};
+const EXTRA_TOPIC_COLORS=[{bg:'#e8f4e8',color:'#2d6e2d',border:'#4a9e4a'},{bg:'#f0e8f4',color:'#6e2d8a',border:'#9e4ab4'},{bg:'#f4ece8',color:'#8a4a2d',border:'#c87050'},{bg:'#e8eef4',color:'#2d4a8a',border:'#4a6ab4'},{bg:'#f4f0e8',color:'#8a7a2d',border:'#b4a040'},{bg:'#f4e8ec',color:'#8a2d4a',border:'#c84070'}];
+
+let dynamicTeam=[...TM.map((n,i)=>({name:n,color:TC[n]||DEFAULT_COLORS[i%DEFAULT_COLORS.length]}))];
+let dynamicTopics=[...TF.map(k=>({key:k,label:TL[k]||k,...(TOPIC_PALETTE[k]||EXTRA_TOPIC_COLORS[0])}))];
+
+function getTeamNames(){return dynamicTeam.map(t=>t.name);}
+function getTeamColor(name){const t=dynamicTeam.find(t=>t.name===name);return t?t.color:'#888';}
+function getTopicKeys(){return dynamicTopics.map(t=>t.key);}
+function getTopicLabel(key){const t=dynamicTopics.find(t=>t.key===key);return t?t.label:key;}
+function getTopicStyle(key){const t=dynamicTopics.find(t=>t.key===key);return t||TOPIC_PALETTE.general;}
+function getInitials(name){const parts=name.trim().split(' ');return parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():name.slice(0,2).toUpperCase();}
 const DB_OK=SUPABASE_URL!=="PASTE_YOUR_SUPABASE_URL_HERE";
 let events=[],filtered=[],curF='all',curV='cal',calY=2026,calM=4;
 
@@ -339,7 +446,189 @@ async function dbUpd(e){await dbF(`ia_calendar?id=eq.${e.id}`,{method:'PATCH',pr
 async function dbDel(id){await dbF(`ia_calendar?id=eq.${id}`,{method:'DELETE'});}
 async function dbSeed(arr){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(arr.map(toRow))});}
 
+// ── SETTINGS ──────────────────────────────────────────────────────────────
+const CFG_KEY = 'ia-cal-config';
+
+async function loadConfig(){
+  if(DB_OK){
+    try{
+      const rows=await dbF('ia_config?order=key.asc');
+      if(rows&&rows.length){
+        rows.forEach(r=>{
+          if(r.key==='team')dynamicTeam=JSON.parse(r.value);
+          if(r.key==='topics')dynamicTopics=JSON.parse(r.value);
+        });
+        return;
+      }
+    }catch(e){console.warn('Config load failed, using defaults');}
+  }
+  const saved=localStorage.getItem(CFG_KEY);
+  if(saved){const c=JSON.parse(saved);if(c.team)dynamicTeam=c.team;if(c.topics)dynamicTopics=c.topics;}
+}
+
+async function persistConfig(){
+  const payload={team:dynamicTeam,topics:dynamicTopics};
+  if(DB_OK){
+    try{
+      await dbF('ia_config?key=eq.team',{method:'DELETE'});
+      await dbF('ia_config?key=eq.topics',{method:'DELETE'});
+      await dbF('ia_config',{method:'POST',prefer:'return=minimal',body:JSON.stringify([
+        {key:'team',value:JSON.stringify(dynamicTeam)},
+        {key:'topics',value:JSON.stringify(dynamicTopics)}
+      ])});
+    }catch(e){console.warn('Config save failed');}
+  }
+  localStorage.setItem(CFG_KEY,JSON.stringify(payload));
+}
+
+let settingsTab='team';
+
+function openSettings(){
+  renderTeamList();
+  renderTopicList();
+  document.getElementById('settings-mo').classList.add('open');
+}
+function closeSettings(){document.getElementById('settings-mo').classList.remove('open');}
+function maybeCloseSettings(ev){if(ev.target===document.getElementById('settings-mo'))closeSettings();}
+
+function switchSettingsTab(tab){
+  settingsTab=tab;
+  document.getElementById('stab-team').classList.toggle('active',tab==='team');
+  document.getElementById('stab-topics').classList.toggle('active',tab==='topics');
+  document.getElementById('stab-team-body').style.display=tab==='team'?'block':'none';
+  document.getElementById('stab-topics-body').style.display=tab==='topics'?'block':'none';
+}
+
+function renderTeamList(){
+  const list=document.getElementById('team-list');
+  if(!list)return;
+  list.innerHTML=dynamicTeam.map((t,i)=>{
+    const ini=getInitials(t.name);
+    return`<div class="item-row" id="tmrow-${i}">
+      <div class="item-avatar" style="background:${t.color}">${ini}</div>
+      <span class="item-name">${t.name}</span>
+      <span class="item-detail">${ini}</span>
+      <div class="color-picker-wrap item-color" style="background:${t.color}" title="Change color">
+        <input type="color" value="${t.color}" onchange="changeTeamColor(${i},this.value)" title="Pick color">
+      </div>
+      <button class="item-del" onclick="removeTeamMember(${i})" title="Remove">&times;</button>
+    </div>`;
+  }).join('');
+}
+
+function renderTopicList(){
+  const list=document.getElementById('topic-list');
+  if(!list)return;
+  list.innerHTML=dynamicTopics.map((t,i)=>{
+    const isBuiltIn=['climate','global','inclusion','energy','ownership','philanthropy','general'].includes(t.key);
+    return`<div class="topic-row" id="tprow-${i}">
+      <div class="topic-swatch" style="background:${t.border}"></div>
+      <span class="item-name">${t.label}</span>
+      <span class="item-detail" style="font-size:10px;color:var(--il);font-family:monospace">${t.key}</span>
+      ${isBuiltIn?'<span style="font-size:10px;color:var(--if);padding:2px 6px;border:1px solid var(--ru);border-radius:10px">built-in</span>':
+        `<button class="item-del" onclick="removeTopic(${i})" title="Remove">&times;</button>`}
+    </div>`;
+  }).join('');
+}
+
+function addTeamMember(){
+  const input=document.getElementById('new-team-name');
+  const name=input.value.trim();
+  if(!name)return;
+  if(dynamicTeam.find(t=>t.name.toLowerCase()===name.toLowerCase())){alert('Already on the team!');return;}
+  const color=DEFAULT_COLORS[dynamicTeam.length%DEFAULT_COLORS.length];
+  dynamicTeam.push({name,color});
+  input.value='';
+  renderTeamList();
+}
+
+function removeTeamMember(i){
+  if(!confirm(`Remove ${dynamicTeam[i].name}?`))return;
+  dynamicTeam.splice(i,1);
+  renderTeamList();
+}
+
+function changeTeamColor(i,color){
+  dynamicTeam[i].color=color;
+  renderTeamList();
+}
+
+function addTopic(){
+  const input=document.getElementById('new-topic-label');
+  const label=input.value.trim();
+  if(!label)return;
+  const key=label.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-');
+  if(dynamicTopics.find(t=>t.key===key)){alert('Topic already exists!');return;}
+  const palette=EXTRA_TOPIC_COLORS[dynamicTopics.length%EXTRA_TOPIC_COLORS.length];
+  dynamicTopics.push({key,label,...palette});
+  TL[key]=label;
+  input.value='';
+  renderTopicList();
+}
+
+function removeTopic(i){
+  if(dynamicTopics[i]&&['climate','global','inclusion','energy','ownership','philanthropy','general'].includes(dynamicTopics[i].key)){
+    alert('Built-in topics cannot be removed.');return;
+  }
+  if(!confirm(`Remove topic "${dynamicTopics[i].label}"?`))return;
+  dynamicTopics.splice(i,1);
+  renderTopicList();
+}
+
+async function saveSettings(){
+  await persistConfig();
+  closeSettings();
+  rebuildSidebar();
+  rebuildTopicSelect();
+  rebuildTeamChecks();
+  applyFilters();
+  setSt('Settings saved');
+}
+
+function rebuildSidebar(){
+  // Rebuild team section in sidebar
+  const teamSection=document.querySelector('.sidebar');
+  if(!teamSection)return;
+  // Team buttons
+  const teamSbl=teamSection.querySelector('[data-section="team-sbl"]');
+  // Simpler: just re-render whole sidebar team+topic sections
+  renderSidebarTeam();
+  renderSidebarTopics();
+}
+
+function renderSidebarTeam(){
+  const container=document.getElementById('sidebar-team-section');
+  if(!container)return;
+  container.innerHTML=dynamicTeam.map(t=>{
+    const cnt=events.filter(e=>(e.team||[]).includes(t.name)).length;
+    return`<button class="fb${curF===t.name?' active':''}" data-f="${t.name}" onclick="setFilter(this,'${t.name}')">
+      <div class="fd" style="background:${t.color}"></div>${t.name}
+      <span class="fc">${cnt||''}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderSidebarTopics(){
+  const container=document.getElementById('sidebar-topic-section');
+  if(!container)return;
+  container.innerHTML=dynamicTopics.map(t=>`
+    <button class="fb${curF===t.key?' active':''}" data-f="${t.key}" onclick="setFilter(this,'${t.key}')">
+      <div class="fd" style="background:${t.border}"></div>${t.label}
+    </button>`).join('');
+}
+
+function rebuildTopicSelect(){
+  const sel=document.getElementById('ftag');
+  if(!sel)return;
+  sel.innerHTML=dynamicTopics.map(t=>`<option value="${t.key}">${t.label}</option>`).join('');
+}
+
+function rebuildTeamChecks(){
+  buildTCS();
+}
+
 async function init(){
+  await loadConfig();
   if(DB_OK){
     try{
       events=await dbLoad();
@@ -351,7 +640,11 @@ async function init(){
   }
   document.getElementById('ls').style.display='none';
   document.getElementById('app-body').style.display='flex';
-  buildTCS(); applyFilters();
+  buildTCS();
+  rebuildTopicSelect();
+  renderSidebarTeam();
+  renderSidebarTopics();
+  applyFilters();
 }
 
 function setFilter(el,f){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');curF=f;applyFilters();}
@@ -363,8 +656,8 @@ function applyFilters(){
     if(curF==='upcoming')mf=!isPast(e);
     else if(['call','travel','ooo','event'].includes(curF))mf=e.type===curF;
     else if(curF==='discount')mf=!!e.discount;
-    else if(TM.includes(curF))mf=(e.team||[]).includes(curF);
-    else if(TF.includes(curF))mf=e.tag===curF;
+    else if(getTeamNames().includes(curF))mf=(e.team||[]).includes(curF);
+    else if(getTopicKeys().includes(curF))mf=e.tag===curF;
     else if(curF==='partner')mf=e.type==='event'&&isPartner(e);
     else if(curF==='nonpartner')mf=e.type==='event'&&!isPartner(e);
     return ms&&mf;
@@ -377,7 +670,7 @@ function updCounts(){
   s('cnt-all')(events.length); s('cnt-up')(c(e=>!isPast(e)));
   s('cnt-call')(c(e=>e.type==='call')); s('cnt-travel')(c(e=>e.type==='travel'));
   s('cnt-ooo')(c(e=>e.type==='ooo')); s('cnt-event')(c(e=>e.type==='event'));
-  TM.forEach(m=>{const el=document.getElementById('cnt-'+m);if(el)el.textContent=c(e=>(e.team||[]).includes(m));});
+  dynamicTeam.forEach(t=>{const el=document.getElementById('cnt-'+t.name);if(el)el.textContent=c(e=>(e.team||[]).includes(t.name));});
   s('s-total')(events.length); s('s-up')(c(e=>!isPast(e)));
   s('s-calls')(c(e=>e.type==='call')); s('s-disc')(c(e=>!!e.discount));
 }
@@ -395,6 +688,10 @@ function render(){curV==='cal'?renderCal():renderList();}
 function chMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
 function goToday(){calY=2026;calM=4;renderCal();}
 
+function getTopicInlineStyle(key){
+  const s=getTopicStyle(key);
+  return `background:${s.bg};color:${s.color};border-left:2px solid ${s.border}`;
+}
 function chipCls(e){
   if(isPartner(e))return 'chip-partner chip-'+(e.tag||'general');
 
@@ -527,13 +824,15 @@ function renderCal(){
       const left=startCol*colW;
       const width=(endCol-startCol+1)*colW;
       const top=4+lane*19;
-      const label=isMD&&!isStart?e.title:`${partner?'':''}${e.title}`;
+      const teamBadges=(e.team||[]).slice(0,3).map(m=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:${getTeamColor(m)};color:#fff;font-size:7px;font-weight:700;flex-shrink:0;margin-left:2px" title="${m}">${getInitials(m)}</span>`).join('');
+      const showLabel=isStart||!isMD;
+      const labelText=showLabel?esc(e.title):'↳';
 
       weekHtml+=`<div class="${barClass}" 
-        style="position:absolute;left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;top:${top}px;right:${endCol===6?'0':'auto'}"
+        style="position:absolute;left:${left.toFixed(2)}%;width:calc(${width.toFixed(2)}% - 1px);top:${top}px;display:flex;align-items:center;gap:2px;overflow:hidden"
         onclick="openPop(event,'${week[startCol].ds}')" 
-        title="${e.title}${e.location?' · '+e.location:''}"
-      >${esc(label)}</div>`;
+        title="${e.title}${e.location?' · '+e.location:''}${(e.team||[]).length?' — '+(e.team||[]).join(', '):''}"
+      ><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${labelText}</span>${showLabel?teamBadges:''}</div>`;
     });
 
     weekHtml+='</div>';
@@ -583,7 +882,13 @@ function pillH(e){
   if(l)parts.push(`<span class="pl pl-${k}">${l}</span>`);
   return parts.join('');
 }
-function tpH(e){return(e.team||[]).map(m=>{const c=TC[m]||'#888';return`<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${c}22;color:${c};border:1px solid ${c}44">${m}</span>`;}).join('');}
+function tpH(e){
+  return(e.team||[]).map(m=>{
+    const c=getTeamColor(m);
+    const ini=getInitials(m);
+    return`<span class="pl-team" style="background:${c}" title="${m}">${ini}</span>`;
+  }).join('');
+}
 function lrH(e){
   const s=e.dateStart.split('-');
   const tI=e.url?`<a href="${esc(e.url)}" target="_blank" rel="noreferrer">${esc(e.title)}</a>`:esc(e.title);
@@ -621,10 +926,19 @@ function renderList(){
 }
 
 let chkTm=[];
-function buildTCS(){document.getElementById('tcs').innerHTML=TM.map(m=>`<span class="tc" id="tc-${m}" onclick="togTM('${m}')">${m}</span>`).join('');}
+function buildTCS(){
+  const tcs=document.getElementById('tcs');if(!tcs)return;
+  tcs.innerHTML=dynamicTeam.map(t=>{
+    const ini=getInitials(t.name);
+    const m=t.name;
+    return`<span class="tc" id="tc-${m}" onclick="togTM('${m}')" title="${m}" style="display:flex;align-items:center;gap:5px">
+      <span style="width:18px;height:18px;border-radius:50%;background:${t.color};color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center">${ini}</span>${m}
+    </span>`;
+  }).join('');
+}
 function togTM(m){
   chkTm=chkTm.includes(m)?chkTm.filter(x=>x!==m):[...chkTm,m];
-  const el=document.getElementById('tc-'+m);const c=chkTm.includes(m);const col=TC[m]||'#888';
+  const el=document.getElementById('tc-'+m);const c=chkTm.includes(m);const col=getTeamColor(m);
   el.classList.toggle('checked',c);el.style.borderColor=c?col:'';el.style.background=c?col+'22':'';el.style.color=c?col:'';
 }
 function resetTM(){chkTm=[];TM.forEach(m=>{const el=document.getElementById('tc-'+m);el.classList.remove('checked');el.style.borderColor=el.style.background=el.style.color='';});}
@@ -701,21 +1015,15 @@ const SEED=[
   {id:'c13',title:"Sponsored call \u2014 Healthy Youth: HopeLab",dateStart:"2026-08-26",dateEnd:"2026-08-26",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
   {id:'c14',title:"Sponsored call \u2014 AlTi (impact metrics)",dateStart:"2026-09-30",dateEnd:"2026-09-30",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
   {id:'c15',title:"ImpactLP call",dateStart:"2026-11-04",dateEnd:"2026-11-04",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Tentative"},
-  {id:'t1',title:"Jessica at Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"travel",type:"travel",team:["Jessica"],url:"https://katapultfuturefest.com/",discount:"",note:"Media partner"},
-  {id:'t2',title:"Jessica at SFi Impact Week",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"travel",type:"travel",team:["Jessica"],url:"https://www.sfiimpactsummit.com/",discount:"",note:""},
-  {id:'t3',title:"Jessica \u2014 vacation",dateStart:"2026-06-08",dateEnd:"2026-06-12",location:"",tag:"ooo",type:"ooo",team:["Jessica"],url:"",discount:"",note:""},
-  {id:'t4',title:"Jessica \u2014 working from Boston",dateStart:"2026-06-17",dateEnd:"2026-07-03",location:"Boston",tag:"travel",type:"travel",team:["Jessica"],url:"",discount:"",note:"Flying June 17 (internet uncertain). ~4pm log-off. Covering Brief proof."},
-  {id:'t5',title:"David at Milken Global Conference",dateStart:"2026-05-03",dateEnd:"2026-05-06",location:"Los Angeles",tag:"travel",type:"travel",team:["David"],url:"https://milkeninstitute.org/events",discount:"",note:""},
-  {id:'t6',title:"David \u2014 away (birthday)",dateStart:"2026-05-08",dateEnd:"2026-05-08",location:"",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:""},
-  {id:'t7',title:"Cesar & David \u2014 Peru",dateStart:"2026-05-16",dateEnd:"2026-05-29",location:"Peru",tag:"travel",type:"travel",team:["Cesar","David"],url:"",discount:"",note:""},
-  {id:'t8',title:"Cesar & David \u2014 off the grid",dateStart:"2026-05-20",dateEnd:"2026-05-24",location:"Peru",tag:"ooo",type:"ooo",team:["Cesar","David"],url:"",discount:"",note:""},
-  {id:'t9',title:"David at Big Path Capital",dateStart:"2026-05-31",dateEnd:"2026-06-03",location:"Charleston, SC",tag:"travel",type:"travel",team:["David"],url:"https://impact-capitalism.com/",discount:"",note:""},
-  {id:'t10',title:"David \u2014 off the grid (France)",dateStart:"2026-06-16",dateEnd:"2026-06-26",location:"France",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:"Walking trip"},
-  {id:'t11',title:"Cesar & David \u2014 Europe",dateStart:"2026-06-27",dateEnd:"2026-07-17",location:"Europe",tag:"travel",type:"travel",team:["Cesar","David"],url:"",discount:"",note:"David's work schedule TBD"},
-  {id:'t12',title:"ImpactAlpha summer break",dateStart:"2026-07-27",dateEnd:"2026-07-30",location:"",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:"No Briefs. David camping."},
-  {id:'t13',title:"David & team at SOCAP",dateStart:"2026-10-12",dateEnd:"2026-10-14",location:"Chicago",tag:"travel",type:"travel",team:["David"],url:"https://socapglobal.com/",discount:"",note:""},
-  {id:'t14',title:"David at GIIN Impact Forum",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Amsterdam",tag:"travel",type:"travel",team:["David"],url:"https://thegiin.org/events/",discount:"",note:""},
-  {id:'e1',title:"MIE National Conference",dateStart:"2026-04-27",dateEnd:"2026-04-29",location:"Atlanta",tag:"philanthropy",type:"event",team:["Cesar","David","Dennis"],url:"https://missioninvestors.org/events/2026-mie-national-conference",discount:"",note:""},
+  {id:'t3',title:"Jessica \u2014 vacation",dateStart:"2026-06-08",dateEnd:"2026-06-12",location:"",tag:"ooo",type:"ooo",team:["Jessica Pothering"],url:"",discount:"",note:""},
+  {id:'t4',title:"Jessica \u2014 working from Boston",dateStart:"2026-06-17",dateEnd:"2026-07-03",location:"Boston",tag:"travel",type:"travel",team:["Jessica Pothering"],url:"",discount:"",note:"Flying June 17 (internet uncertain). ~4pm log-off. Covering Brief proof."},
+  {id:'t6',title:"David \u2014 away (birthday)",dateStart:"2026-05-08",dateEnd:"2026-05-08",location:"",tag:"ooo",type:"ooo",team:["David Bank"],url:"",discount:"",note:""},
+  {id:'t7',title:"Cesar & David \u2014 Peru",dateStart:"2026-05-16",dateEnd:"2026-05-29",location:"Peru",tag:"travel",type:"travel",team:["Cesar Chavez","David Bank"],url:"",discount:"",note:""},
+  {id:'t8',title:"Cesar & David \u2014 off the grid",dateStart:"2026-05-20",dateEnd:"2026-05-24",location:"Peru",tag:"ooo",type:"ooo",team:["Cesar Chavez","David Bank"],url:"",discount:"",note:""},
+  {id:'t10',title:"David \u2014 off the grid (France)",dateStart:"2026-06-16",dateEnd:"2026-06-26",location:"France",tag:"ooo",type:"ooo",team:["David Bank"],url:"",discount:"",note:"Walking trip"},
+  {id:'t11',title:"Cesar & David \u2014 Europe",dateStart:"2026-06-27",dateEnd:"2026-07-17",location:"Europe",tag:"travel",type:"travel",team:["Cesar Chavez","David Bank"],url:"",discount:"",note:"David's work schedule TBD"},
+  {id:'t12',title:"ImpactAlpha summer break",dateStart:"2026-07-27",dateEnd:"2026-07-30",location:"",tag:"ooo",type:"ooo",team:["David Bank"],url:"",discount:"",note:"No Briefs. David camping."},
+  {id:'e1',title:"MIE National Conference",dateStart:"2026-04-27",dateEnd:"2026-04-29",location:"Atlanta",tag:"philanthropy",type:"event",team:["Cesar Chavez","David Bank","Dennis Price"],url:"https://missioninvestors.org/events/2026-mie-national-conference",discount:"",note:""},
   {id:'e2',title:"Sustainable & Impact Investments International Conference",dateStart:"2026-01-22",dateEnd:"2026-01-23",location:"Hamburg",tag:"global",type:"event",team:[],url:"https://socialimpactconference.it/",discount:"",note:""},
   {id:'e3',title:"Convergence Conference 2026",dateStart:"2026-02-03",dateEnd:"2026-02-05",location:"Regina, Canada",tag:"global",type:"event",team:[],url:"https://www.convergence.ag/",discount:"",note:""},
   {id:'e4',title:"Urban Institute",dateStart:"2026-02-10",dateEnd:"2026-02-10",location:"TBD",tag:"inclusion",type:"event",team:[],url:"",discount:"",note:""},
@@ -738,14 +1046,14 @@ const SEED=[
   {id:'e21',title:"SF Climate Week",dateStart:"2026-04-18",dateEnd:"2026-04-26",location:"San Francisco",tag:"climate",type:"event",team:[],url:"https://www.sfclimateweek.org/",discount:"",note:""},
   {id:'e22',title:"Skoll World Forum",dateStart:"2026-04-21",dateEnd:"2026-04-24",location:"Oxford, UK",tag:"global",type:"event",team:[],url:"https://skoll.org/skoll-world-forum/",discount:"",note:""},
   {id:'e23',title:"AVCA Conference & VC Summit",dateStart:"2026-04-28",dateEnd:"2026-05-02",location:"Nairobi",tag:"global",type:"event",team:[],url:"https://www.avca.africa/events/events-calendar/annual-avca-conference/",discount:"",note:""},
-  {id:'e24',title:"Milken Global Conference",dateStart:"2026-05-03",dateEnd:"2026-05-06",location:"Los Angeles",tag:"global",type:"event",team:[],url:"https://milkeninstitute.org/events",discount:"",note:""},
+  {id:'e24',title:"Milken Global Conference",dateStart:"2026-05-03",dateEnd:"2026-05-06",location:"Los Angeles",tag:"global",type:"event",team:["David Bank"],url:"https://milkeninstitute.org/events",discount:"",note:""},
   {id:'e25',title:"LARIS 2026",dateStart:"2026-05-12",dateEnd:"2026-05-14",location:"Bogot\u00e1",tag:"climate",type:"event",team:[],url:"https://regenerativo.org/en/laris/",discount:"10% off (impactalpha)",note:""},
   {id:'e26',title:"Total Impact Summit '26",dateStart:"2026-05-13",dateEnd:"2026-05-14",location:"Philadelphia",tag:"inclusion",type:"event",team:[],url:"https://www.impactphl.org/events-archive/tis26",discount:"",note:""},
   {id:'e27',title:"Impact Investor Global Summit 2026",dateStart:"2026-05-19",dateEnd:"2026-05-20",location:"London",tag:"global",type:"event",team:[],url:"https://www.peievents.com/en/event/impact-investor-global-summit/",discount:"",note:""},
   {id:'e28',title:"IAIA26",dateStart:"2026-05-19",dateEnd:"2026-05-22",location:"Qu\u00e9bec City",tag:"global",type:"event",team:[],url:"https://2026.iaia.org/",discount:"",note:""},
   {id:'e29',title:"ProMujer GLI Forum",dateStart:"2026-05-26",dateEnd:"2026-05-28",location:"Lima",tag:"inclusion",type:"event",team:[],url:"https://gliforumlatam.com/",discount:"",note:"",partner:true},
-  {id:'e30',title:"Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://katapultfuturefest.com/",discount:"20% off (IA-FRIENDS)",note:"",partner:true},
-  {id:'e31',title:"Impact Capitalism Summit",dateStart:"2026-06-01",dateEnd:"2026-06-03",location:"TBD",tag:"global",type:"event",team:[],url:"https://impact-capitalism.com/",discount:"",note:"",partner:true},
+  {id:'e30',title:"Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"global",type:"event",team:["Jessica Pothering"],url:"https://katapultfuturefest.com/",discount:"20% off (IA-FRIENDS)",note:"Media partner",partner:true},
+  {id:'e31',title:"Impact Capitalism Summit",dateStart:"2026-06-01",dateEnd:"2026-06-03",location:"Charleston, SC",tag:"global",type:"event",team:["David Bank"],url:"https://impact-capitalism.com/",discount:"Save $200 (IMPACTALPHA)",note:"",partner:true},
   {id:'e32',title:"SFi Impact Week 2026",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"global",type:"event",team:[],url:"https://www.sfiimpactsummit.com/",discount:"",note:"",partner:true},
   {id:'e33',title:"Conference on Legal Issues \u2014 Social Enterprise",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"New York",tag:"general",type:"event",team:[],url:"https://www.law.nyu.edu/centers/grunin-social-entrepreneurship/events/allevents",discount:"",note:""},
   {id:'e34',title:"Responsible Investor Conference",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"London",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
@@ -769,11 +1077,11 @@ const SEED=[
   {id:'e52',title:"European Meeting on Renewable Energy",dateStart:"2026-10-05",dateEnd:"2026-10-06",location:"Lisbon",tag:"energy",type:"event",team:[],url:"https://renewableenergy.c2pforum.com/",discount:"",note:""},
   {id:'e53',title:"Net Zero Conference 2026",dateStart:"2026-10-08",dateEnd:"2026-10-08",location:"Los Angeles",tag:"climate",type:"event",team:[],url:"",discount:"",note:""},
   {id:'e54',title:"IMF / World Bank Annual Meetings",dateStart:"2026-10-12",dateEnd:"2026-10-18",location:"Bangkok",tag:"global",type:"event",team:[],url:"https://www.worldbank.org/en/meetings/splash/annual",discount:"",note:""},
-  {id:'e55',title:"SOCAP",dateStart:"2026-10-12",dateEnd:"2026-10-14",location:"Chicago",tag:"global",type:"event",team:[],url:"https://socapglobal.com/",discount:"",note:"",partner:true},
+  {id:'e55',title:"SOCAP",dateStart:"2026-10-12",dateEnd:"2026-10-14",location:"Chicago",tag:"global",type:"event",team:["David Bank"],url:"https://socapglobal.com/",discount:"",note:"",partner:true},
   {id:'e56',title:"PRI in Person 2026",dateStart:"2026-10-13",dateEnd:"2026-10-15",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://public.unpri.org/news-and-events/upcoming-events/pri-in-person-2026",discount:"",note:"20th anniversary"},
   {id:'e57',title:"Solar & Storage Live Paris",dateStart:"2026-10-14",dateEnd:"2026-10-15",location:"Paris",tag:"energy",type:"event",team:[],url:"",discount:"",note:""},
   {id:'e58',title:"UN Biodiversity Conference",dateStart:"2026-10-19",dateEnd:"2026-10-30",location:"Yerevan, Armenia",tag:"climate",type:"event",team:[],url:"",discount:"",note:""},
-  {id:'e59',title:"GIIN Impact Forum 2026",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://thegiin.org/events/",discount:"",note:""},
+  {id:'e59',title:"GIIN Impact Forum 2026",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Amsterdam",tag:"global",type:"event",team:["David Bank"],url:"https://thegiin.org/events/",discount:"",note:""},
   {id:'e60',title:"Asia Clean Energy Summit (ACES) 2026",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Singapore",tag:"energy",type:"event",team:[],url:"",discount:"",note:""},
   {id:'e61',title:"FT Climate & Impact Summit Europe",dateStart:"2026-10-15",dateEnd:"2026-10-15",location:"London",tag:"climate",type:"event",team:[],url:"https://www.ft.com/events",discount:"",note:""},
   {id:'e62',title:"COP31",dateStart:"2026-11-09",dateEnd:"2026-11-20",location:"Antalya, T\u00fcrkiye",tag:"climate",type:"event",team:[],url:"https://sdg.iisd.org/events/2026-un-climate-change-conference-unfccc-cop-31/",discount:"",note:""},
