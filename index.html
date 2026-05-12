@@ -384,6 +384,10 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
   </aside>
 
   <div class="cal-area" id="cal-area">
+    <div id="filter-banner" style="display:none;align-items:center;justify-content:space-between;padding:6px 14px;background:#e8f4ff;border-bottom:1px solid #b7dcff;flex-shrink:0">
+      <span id="filter-banner-label" style="font-size:11px;color:#0c447c;font-family:'Noto Sans',sans-serif;font-weight:500"></span>
+      <button onclick="setFilter(document.querySelector('[data-f=all]'),'all')" style="font-size:11px;color:#0f8afb;background:none;border:none;cursor:pointer;font-family:'Noto Sans',sans-serif;text-decoration:underline">Clear filter</button>
+    </div>
     <div class="month-nav">
       <div style="display:flex;align-items:baseline;gap:4px">
         <span class="mnt" id="mnt">May</span><span class="mns" id="mns">2026</span>
@@ -401,7 +405,9 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
     <div class="cal-grid-wrap"><div class="cal-grid" id="cal-grid"></div></div>
   </div>
 
-  <div class="list-area" id="list-area"></div>
+  <div class="list-area" id="list-area">
+    <div id="filter-banner-list" style="display:none"></div>
+  </div>
 </div>
 
 <div class="ls" id="ls"><div class="sp"></div><span>Loading&hellip;</span></div>
@@ -813,6 +819,18 @@ function applyFilters(){
     else if(curF==='nonpartner')mf=e.type==='event'&&!isPartner(e);
     return ms&&mf;
   });
+  // If filtering by team member or topic, jump calendar to first matching event
+  const isPersonFilter=getTeamNames().includes(curF)||getTopicKeys().includes(curF)||['call','travel','ooo','event','partner','nonpartner','discount'].includes(curF);
+  if(isPersonFilter&&filtered.length>0&&curV==='cal'){
+    const upcoming=filtered.filter(e=>!isPast(e)).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
+    const target=upcoming.length?upcoming[0]:filtered.sort((a,b)=>b.dateStart.localeCompare(a.dateStart))[0];
+    if(target){
+      const parts=target.dateStart.split('-');
+      calY=+parts[0]; calM=+parts[1]-1;
+    }
+  }
+  // Reset to current month when clearing filter
+  if(curF==='all'&&q===''){calY=2026;calM=4;}
   updCounts(); render();
 }
 function updCounts(){
@@ -834,7 +852,32 @@ function setView(v){
   document.getElementById('list-area').style.display=v==='list'?'block':'none';
   render();
 }
-function render(){curV==='cal'?renderCal():renderList();}
+function render(){
+  // Show/hide active filter banner
+  const banner=document.getElementById('filter-banner');
+  if(banner){
+    if(curF!=='all'){
+      const label=getTeamNames().includes(curF)?curF:
+        getTopicKeys().includes(curF)?getTopicLabel(curF):
+        {call:'Calls',travel:'Travel',ooo:'Out of office',event:'All events',
+         partner:'Partner events',nonpartner:'Non-partner events',
+         upcoming:'Upcoming',discount:'Has discount'}[curF]||curF;
+      banner.style.display='flex';
+      document.getElementById('filter-banner-label').textContent=`Filtering: ${label}`;
+      if(filtered.length===0){
+        document.getElementById('filter-banner-label').textContent+=` — no events found`;
+      } else {
+        document.getElementById('filter-banner-label').textContent+=` (${filtered.length} event${filtered.length===1?'':'s'})`;
+      }
+    } else {
+      banner.style.display='none';
+    }
+  }
+  // Also update list banner
+  const lbanner=document.getElementById('filter-banner-list');
+  if(lbanner){lbanner.style.display='none';}
+  curV==='cal'?renderCal():renderList();
+}
 
 function chMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
 function goToday(){calY=2026;calM=4;renderCal();}
