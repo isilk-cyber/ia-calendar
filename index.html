@@ -368,7 +368,7 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
   <div class="cal-area" id="cal-area">
     <div id="filter-banner" style="display:none;align-items:center;justify-content:space-between;padding:6px 14px;background:#e8f4ff;border-bottom:1px solid #b7dcff;flex-shrink:0">
       <span id="filter-banner-label" style="font-size:11px;color:#0c447c;font-family:'Noto Sans',sans-serif;font-weight:500"></span>
-      <button onclick="setFilter(document.querySelector('[data-f=all]'),'all')" style="font-size:11px;color:#0f8afb;background:none;border:none;cursor:pointer;font-family:'Noto Sans',sans-serif;text-decoration:underline">Clear filter</button>
+      <button onclick="clearFilters()" style="font-size:11px;color:#0f8afb;background:none;border:none;cursor:pointer;font-family:'Noto Sans',sans-serif;text-decoration:underline">Clear filter</button>
     </div>
     <div class="month-nav">
       <div style="display:flex;align-items:baseline;gap:4px">
@@ -474,7 +474,7 @@ function getTopicLabel(key){const t=dynamicTopics.find(t=>t.key===key);return t?
 function getTopicStyle(key){const t=dynamicTopics.find(t=>t.key===key);return t||TOPIC_PALETTE.general;}
 function getInitials(name){const parts=name.trim().split(' ');return parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():name.slice(0,2).toUpperCase();}
 const DB_OK=SUPABASE_URL!=="PASTE_YOUR_SUPABASE_URL_HERE";
-let events=[],filtered=[],curF='all',curV='cal',calY=2026,calM=4;
+let events=[],filtered=[],activeFilters=new Set(['all']),curV='cal',calY=2026,calM=4;
 
 function isPast(e){return new Date(e.dateStart.replace(/-/g,'/')) < TODAY;}
 function uid(){return 'u'+Date.now()+Math.random().toString(36).slice(2,6);}
@@ -754,7 +754,7 @@ function renderSidebarTeam(){
   container.innerHTML=dynamicTeam.map(t=>{
     const cnt=events.filter(e=>(e.team||[]).includes(t.name)).length;
     const ini=getInitials(t.name);
-    return`<button class="fb${curF===t.name?' active':''}" data-f="${t.name}" onclick="setFilter(this,'${t.name}')">
+    return`<button class="fb${activeFilters.has(t.name)?' active':''}" data-f="${t.name}" onclick="setFilter(this,'${t.name}')">
       <span style="width:16px;height:16px;border-radius:50%;background:${t.color};color:#fff;font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</span>
       ${t.name}
       <span class="fc">${cnt||''}</span>
@@ -804,23 +804,64 @@ async function init(){
   updCounts();
 }
 
-function setFilter(el,f){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');curF=f;applyFilters();}
+function setFilter(el,f){
+  if(f==='all'){
+    // All clears everything else
+    activeFilters=new Set(['all']);
+    document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    // Remove 'all' when selecting anything specific
+    activeFilters.delete('all');
+    document.querySelector('[data-f="all"]')?.classList.remove('active');
+    if(activeFilters.has(f)){
+      activeFilters.delete(f);
+      el.classList.remove('active');
+      if(activeFilters.size===0){
+        activeFilters.add('all');
+        document.querySelector('[data-f="all"]')?.classList.add('active');
+      }
+    } else {
+      activeFilters.add(f);
+      el.classList.add('active');
+    }
+  }
+  applyFilters();
+}
 function applyFilters(){
   const q=document.getElementById('search').value.toLowerCase();
+  const fs=activeFilters;
+
+  // Categorise active filters
+  const typeFilters=['call','travel','ooo','event'].filter(f=>fs.has(f));
+  const topicFilters=getTopicKeys().filter(f=>fs.has(f));
+  const teamFilters=getTeamNames().filter(f=>fs.has(f));
+  const specialFilters=['upcoming','partner','nonpartner','discount'].filter(f=>fs.has(f));
+  const isAll=fs.has('all');
+
   filtered=events.filter(e=>{
     const ms=!q||(e.title+(e.location||'')+(e.tag||'')+(e.note||'')+(e.team||[]).join(' ')).toLowerCase().includes(q);
-    let mf=true;
-    if(curF==='upcoming')mf=!isPast(e);
-    else if(['call','travel','ooo','event'].includes(curF))mf=e.type===curF;
-    else if(curF==='discount')mf=!!e.discount;
-    else if(getTeamNames().includes(curF))mf=(e.team||[]).includes(curF);
-    else if(getTopicKeys().includes(curF))mf=e.tag===curF;
-    else if(curF==='partner')mf=e.type==='event'&&isPartner(e);
-    else if(curF==='nonpartner')mf=e.type==='event'&&!isPartner(e);
-    return ms&&mf;
+    if(!ms)return false;
+    if(isAll)return true;
+
+    // Each active category must match (AND between categories, OR within)
+    if(typeFilters.length&&!typeFilters.some(f=>e.type===f))return false;
+    if(topicFilters.length&&!topicFilters.some(f=>e.tag===f))return false;
+    if(teamFilters.length&&!teamFilters.some(f=>(e.team||[]).includes(f)))return false;
+    if(specialFilters.length){
+      const ok=specialFilters.every(f=>{
+        if(f==='upcoming')return !isPast(e);
+        if(f==='partner')return isPartner(e);
+        if(f==='nonpartner')return !isPartner(e);
+        if(f==='discount')return !!e.discount;
+        return true;
+      });
+      if(!ok)return false;
+    }
+    return true;
   });
   // If filtering by team member or topic, jump calendar to first matching event
-  const isPersonFilter=getTeamNames().includes(curF)||getTopicKeys().includes(curF)||['call','travel','ooo','event','partner','nonpartner','discount'].includes(curF);
+  const isPersonFilter=!activeFilters.has('all')&&activeFilters.size>0;
   if(isPersonFilter&&filtered.length>0&&curV==='cal'){
     const upcoming=filtered.filter(e=>!isPast(e)).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
     const target=upcoming.length?upcoming[0]:filtered.sort((a,b)=>b.dateStart.localeCompare(a.dateStart))[0];
@@ -830,7 +871,7 @@ function applyFilters(){
     }
   }
   // Reset to current month when clearing filter
-  if(curF==='all'&&q===''){calY=2026;calM=4;}
+  if(activeFilters.has('all')&&q===''){calY=2026;calM=4;}
   render(); updCounts();
 }
 function updCounts(){
@@ -856,19 +897,18 @@ function render(){
   // Show/hide active filter banner
   const banner=document.getElementById('filter-banner');
   if(banner){
-    if(curF!=='all'){
-      const label=getTeamNames().includes(curF)?curF:
-        getTopicKeys().includes(curF)?getTopicLabel(curF):
-        {call:'Calls',travel:'Travel',ooo:'Out of office',event:'All events',
-         partner:'Partner events',nonpartner:'Non-partner events',
-         upcoming:'Upcoming',discount:'Has discount'}[curF]||curF;
+    if(!activeFilters.has('all')&&activeFilters.size>0){
+      const labelMap={call:'Calls',travel:'Travel',ooo:'Out of office',event:'Events',
+        partner:'Partner',nonpartner:'Non-partner',upcoming:'Upcoming',discount:'Has discount'};
+      const labels=[...activeFilters].map(f=>
+        getTeamNames().includes(f)?f:
+        getTopicKeys().includes(f)?getTopicLabel(f):
+        labelMap[f]||f
+      );
       banner.style.display='flex';
-      document.getElementById('filter-banner-label').textContent=`Filtering: ${label}`;
-      if(filtered.length===0){
-        document.getElementById('filter-banner-label').textContent+=` — no events found`;
-      } else {
-        document.getElementById('filter-banner-label').textContent+=` (${filtered.length} event${filtered.length===1?'':'s'})`;
-      }
+      const txt=labels.join(' + ');
+      document.getElementById('filter-banner-label').textContent=
+        `${txt} — ${filtered.length} event${filtered.length===1?'':'s'}`;
     } else {
       banner.style.display='none';
     }
@@ -1166,6 +1206,12 @@ function openModal(e,ds){
 function closeMo(){document.getElementById('mo').classList.remove('open');}
 function maybeCloseMo(ev){if(ev.target===document.getElementById('mo'))closeMo();}
 
+function clearFilters(){
+  activeFilters=new Set(['all']);
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-f="all"]')?.classList.add('active');
+  applyFilters();
+}
 function updatePartnerStyle(){
   const chk=document.getElementById('fpartner');
   const lbl=document.getElementById('partner-label');
