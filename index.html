@@ -467,7 +467,7 @@ let dynamicTeam=[...TM.map((n,i)=>({name:n,color:TC[n]||DEFAULT_COLORS[i%DEFAULT
 let dynamicTopics=[...TF.map(k=>({key:k,label:TL[k]||k,...(TOPIC_PALETTE[k]||EXTRA_TOPIC_COLORS[0])}))];
 
 function getTeamNames(){return dynamicTeam.map(t=>t.name);}
-function getTeamColor(name){const t=dynamicTeam.find(t=>t.name===name);return t?t.color:'#888';}
+function getTeamColor(name){const t=dynamicTeam.find(t=>t.name===name);return t?t.color:(TC[name]||'#888');}
 function getTopicKeys(){return dynamicTopics.map(t=>t.key);}
 function getTopicLabel(key){const t=dynamicTopics.find(t=>t.key===key);return t?t.label:key;}
 function getTopicStyle(key){const t=dynamicTopics.find(t=>t.key===key);return t||TOPIC_PALETTE.general;}
@@ -782,6 +782,8 @@ function rebuildTeamChecks(){
 
 async function init(){
   await loadConfig();
+  // Always enforce correct team from hardcoded source
+  dynamicTeam=TM.map(n=>({name:n,color:TC[n]||'#888'}));
   if(DB_OK){
     try{
       events=await dbLoad();
