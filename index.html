@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImpactAlpha 2026 Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script>
+  const SUPABASE_URL = "https://fgttyqdwrbcnheqimvfn.supabase.co/rest/v1/";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZndHR5cWR3cmJjbmhlcWltdmZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NDIzMDgsImV4cCI6MjA5NDExODMwOH0.dsxMydGHYwZIWOb5oCgPmN3MH3IINLjTgVePz00tF-U";
+</script>
+<style>
+:root{--gd:#0f2d1e;--gk:#1a3a2a;--gm:#1D9E75;--gl:#7ec8a4;--gp:#e1f5ee;--am:#BA7517;--ap:#faeeda;--bl:#185FA5;--bp:#e6f1fb;--pp:#eeedfe;--pu:#534AB7;--cp:#fcebeb;--co:#A32D2D;--kp:#fbeaf0;--pk:#993556;--gy:#f4f2ed;--gr:#5F5E5A;--ink:#1a1a18;--im:#555;--il:#888;--if:#bbb;--ru:#e8e5df;--bg:#faf9f6;--wh:#fff;--r:8px;--rl:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;display:flex;flex-direction:column}
+.site-header{background:var(--gd);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:50px;flex-shrink:0;z-index:50}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-mark{width:27px;height:27px;border-radius:6px;background:var(--gk);border:1px solid rgba(126,200,164,.3);display:flex;align-items:center;justify-content:center;font-family:'Libre Baskerville',serif;font-size:12px;font-weight:700;color:var(--gl)}
+.logo-name{font-size:13px;font-weight:500;color:#fff}
+.logo-sep{color:rgba(255,255,255,.25);margin:0 3px}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.45)}
+.live-pill{font-size:10px;background:rgba(29,158,117,.2);color:var(--gl);border:1px solid rgba(29,158,117,.35);border-radius:10px;padding:2px 7px;margin-left:5px;display:none}
+.header-right{display:flex;align-items:center;gap:7px}
+.save-st{font-size:11px;color:rgba(255,255,255,.3)}
+.view-toggle{display:flex;background:rgba(255,255,255,.1);border-radius:6px;padding:2px;gap:2px}
+.vbtn{padding:4px 11px;border-radius:4px;border:none;background:transparent;color:rgba(255,255,255,.55);font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.vbtn.active{background:rgba(255,255,255,.15);color:#fff}
+.btn-g{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit}
+.btn-g:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-p{background:var(--gm);color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.btn-p:hover{background:#19b882}
+/* Layout */
+.app-body{display:flex;flex:1;overflow:hidden}
+/* Sidebar */
+.sidebar{width:182px;flex-shrink:0;background:var(--wh);border-right:1px solid var(--ru);padding:.75rem;overflow-y:auto}
+.srch{width:100%;padding:6px 8px;font-size:12px;border:1px solid var(--ru);border-radius:var(--r);background:var(--bg);color:var(--ink);font-family:inherit;outline:none;margin-bottom:.65rem}
+.srch:focus{border-color:var(--gm)}
+.sbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--if);margin:.8rem 0 2px;display:block}
+.fb{display:flex;align-items:center;gap:6px;width:100%;padding:4px 6px;border-radius:5px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:11px;color:var(--im);text-align:left;margin-bottom:1px;transition:background .1s}
+.fb:hover{background:var(--gy)}
+.fb.active{background:var(--gp);color:var(--gd);font-weight:500}
+.fd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fc{margin-left:auto;font-size:10px;color:var(--if)}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:3px}
+.sb{background:var(--bg);border-radius:var(--r);padding:6px 4px;text-align:center}
+.sn{font-size:16px;font-weight:500}
+.sl{font-size:9px;color:var(--il);margin-top:1px}
+/* Cal area */
+.cal-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.month-nav{display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.25rem;border-bottom:1px solid var(--ru);background:var(--wh);flex-shrink:0}
+.mnt{font-family:'Libre Baskerville',serif;font-size:19px;font-weight:400;font-style:italic;color:var(--ink)}
+.mns{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--if);font-style:normal;margin-left:6px}
+.nav-arr{display:flex;gap:3px}
+.nb{height:28px;padding:0 10px;border:1px solid var(--ru);border-radius:5px;background:var(--wh);cursor:pointer;font-size:14px;color:var(--im);display:flex;align-items:center;justify-content:center;transition:all .1s;font-family:inherit;font-size:11px}
+.nb:hover{background:var(--bg);border-color:#ccc}
+.cal-dow{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--ru);background:var(--wh);flex-shrink:0}
+.dow{text-align:center;padding:5px 0;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--if)}
+.cal-grid-wrap{flex:1;overflow-y:auto;border-left:1px solid var(--ru)}
+.cal-grid{border-left:0}
+.cc{border-right:1px solid var(--ru);border-bottom:1px solid var(--ru);padding:4px 5px;min-width:0;position:relative;background:var(--wh);transition:background .1s;cursor:default}
+.cc:hover{background:#fefefe}
+.cc.om{background:var(--bg)}
+.cc.om .dn{color:var(--if)}
+.cc.td{background:#f0faf5}
+.cc.td .dn{background:var(--gm);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px}
+.dn{font-size:11px;font-weight:500;color:var(--im);margin-bottom:2px;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+.da{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:3px;border:1px solid var(--ru);background:var(--wh);color:var(--if);font-size:13px;line-height:1;display:none;align-items:center;justify-content:center;cursor:pointer}
+.cc:hover .da{display:flex}
+.da:hover{background:var(--gm);border-color:var(--gm);color:#fff}
+.ce{display:flex;flex-direction:column;gap:1px}
+.chip{font-size:9px;padding:2px 4px;border-radius:2px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.chip:hover{opacity:.8}
+.chip-call{background:#d1f0e4;color:#085041;border-left:2px solid var(--gm)}
+.chip-ooo{background:#fde8c0;color:#633806;border-left:2px solid var(--am)}
+.chip-travel{background:#cfe0f5;color:#0C447C;border-left:2px solid var(--bl)}
+.chip-climate{background:var(--gp);color:#0F6E56;border-left:2px solid var(--gm)}
+.chip-global{background:var(--bp);color:var(--bl);border-left:2px solid var(--bl)}
+.chip-inclusion{background:var(--pp);color:var(--pu);border-left:2px solid var(--pu)}
+.chip-energy{background:var(--ap);color:var(--am);border-left:2px solid var(--am)}
+.chip-ownership{background:var(--cp);color:var(--co);border-left:2px solid var(--co)}
+.chip-philanthropy{background:var(--kp);color:var(--pk);border-left:2px solid var(--pk)}
+.chip-general{background:var(--gy);color:var(--im);border-left:2px solid #ccc}
+.mc{font-size:9px;color:var(--if);padding:1px 4px;cursor:pointer}
+.mc:hover{color:var(--im)}
+/* List */
+.list-area{flex:1;overflow-y:auto;padding:1.1rem 1.4rem;display:none}
+.lmh{font-family:'Libre Baskerville',serif;font-size:16px;font-style:italic;color:var(--ink);margin-bottom:.45rem;display:flex;align-items:baseline;gap:7px}
+.lmc{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--if);font-style:normal}
+.ll{display:flex;flex-direction:column;gap:3px;margin-bottom:1.4rem}
+.lr{display:flex;gap:10px;padding:8px 12px;background:var(--wh);border:1px solid var(--ru);border-radius:var(--r);align-items:flex-start;position:relative;transition:border-color .1s,background .1s}
+.lr:hover{border-color:#ccc;background:var(--bg)}
+.lr.past{opacity:.5}
+.lr.tc{border-left:3px solid var(--gm);border-radius:0 var(--r) var(--r) 0}
+.lr.to{border-left:3px solid var(--am);border-radius:0 var(--r) var(--r) 0}
+.lr.tt{border-left:3px solid var(--bl);border-radius:0 var(--r) var(--r) 0}
+.ldate{min-width:36px;text-align:center;flex-shrink:0}
+.lmon{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--if)}
+.lday{font-size:18px;font-weight:300;line-height:1}
+.lbody{flex:1;min-width:0}
+.ltitle{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
+.ltitle a{color:inherit;text-decoration:none}
+.ltitle a:hover{color:var(--gm)}
+.lmeta{font-size:10px;color:var(--il);display:flex;gap:8px;flex-wrap:wrap}
+.lnote{font-size:10px;color:#999;font-style:italic;margin-top:1px}
+.lact{display:none;gap:3px;flex-shrink:0}
+.lr:hover .lact{display:flex}
+.ab{padding:3px 8px;font-size:10px;border:1px solid var(--ru);border-radius:4px;background:var(--wh);cursor:pointer;font-family:inherit;color:var(--im)}
+.ab:hover{background:var(--bg)}
+.ab.del:hover{background:#fff0f0;border-color:#fca5a5;color:#b91c1c}
+.divl{display:flex;align-items:center;gap:8px;margin:1.1rem 0 .75rem}
+.divln{flex:1;height:1px;background:var(--ru)}
+.divlt{font-size:10px;color:var(--if);white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
+/* Pills */
+.pl{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.pl-climate{background:var(--gp);color:#0F6E56}
+.pl-inclusion{background:var(--pp);color:var(--pu)}
+.pl-global{background:var(--bp);color:var(--bl)}
+.pl-general{background:var(--gy);color:var(--gr)}
+.pl-energy{background:var(--ap);color:var(--am)}
+.pl-ownership{background:var(--cp);color:var(--co)}
+.pl-philanthropy{background:var(--kp);color:var(--pk)}
+.pl-call{background:var(--gp);color:#085041}
+.pl-ooo{background:var(--ap);color:#633806}
+.pl-travel{background:var(--bp);color:#0C447C}
+.pl-disc{background:#eaf3de;color:#3B6D11}
+/* Popover */
+.pop-ov{display:none;position:fixed;inset:0;z-index:150}
+.pop-ov.open{display:block}
+.pop{position:fixed;background:var(--wh);border:1px solid var(--ru);border-radius:var(--rl);box-shadow:0 8px 28px rgba(0,0,0,.13);width:300px;max-height:400px;overflow-y:auto;z-index:160;padding:.875rem}
+.pop-dt{font-family:'Libre Baskerville',serif;font-size:14px;font-style:italic;margin-bottom:.65rem;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
+.pop-cl{font-size:17px;color:var(--if);cursor:pointer;background:none;border:none;font-family:inherit}
+.pop-cl:hover{color:var(--ink)}
+.pop-ev{padding:7px 9px;border-radius:5px;margin-bottom:4px;cursor:pointer}
+.pop-ev:hover{opacity:.85}
+.pop-t{font-size:11px;font-weight:500;margin-bottom:1px}
+.pop-m{font-size:10px;opacity:.75}
+.pop-add{width:100%;padding:6px;border:1px dashed var(--ru);border-radius:5px;background:transparent;color:var(--if);font-family:inherit;font-size:11px;cursor:pointer;margin-top:5px}
+.pop-add:hover{border-color:var(--gm);color:var(--gm);background:var(--gp)}
+/* Modal */
+.mo{display:none;position:fixed;inset:0;background:rgba(10,20,15,.5);z-index:200;align-items:center;justify-content:center}
+.mo.open{display:flex}
+.md{background:var(--wh);border-radius:var(--rl);width:510px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 56px rgba(0,0,0,.18)}
+.mh{padding:1rem 1.4rem .8rem;border-bottom:1px solid var(--ru);display:flex;align-items:center;justify-content:space-between}
+.mht{font-size:13px;font-weight:500}
+.mc2{width:24px;height:24px;border-radius:5px;border:1px solid var(--ru);background:var(--bg);cursor:pointer;font-size:16px;color:var(--il);display:flex;align-items:center;justify-content:center}
+.mc2:hover{background:var(--ru)}
+.mb{padding:1rem 1.4rem}
+.fr{margin-bottom:11px}
+.fr label{display:block;font-size:10px;font-weight:700;color:#777;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
+.fr input,.fr select,.fr textarea{width:100%;padding:6px 8px;font-size:12px;border:1px solid var(--ru);border-radius:var(--r);background:var(--bg);color:var(--ink);font-family:inherit;outline:none;transition:border-color .12s}
+.fr input:focus,.fr select:focus,.fr textarea:focus{border-color:var(--gm)}
+.fr textarea{min-height:52px;resize:vertical}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tcs{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px}
+.tc{padding:3px 8px;border-radius:20px;border:1px solid var(--ru);background:var(--wh);cursor:pointer;font-size:11px;transition:all .12s;user-select:none}
+.mf{padding:.75rem 1.4rem;border-top:1px solid var(--ru);display:flex;justify-content:space-between;align-items:center}
+.mfl{display:flex;gap:7px}
+/* Loading */
+.ls{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--il);gap:11px}
+.sp{width:24px;height:24px;border:2px solid var(--ru);border-top-color:var(--gm);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Multi-day spanning bars */
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);position:relative;min-height:22px;margin-top:2px}
+.span-bar{height:16px;border-radius:2px;font-size:9px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;line-height:14px;position:relative;z-index:1}
+.span-bar:hover{opacity:.8;z-index:2}
+.span-bar.start{border-radius:3px 0 0 3px}
+.span-bar.end{border-radius:0 3px 3px 0}
+.span-bar.solo{border-radius:3px}
+.span-bar.mid{border-radius:0}
+/* Partner event styling */
+.chip-partner{background:#fef3c7;color:#78350f;border-left:2px solid #f59e0b;font-weight:600}
+.chip-partner::before{content:'★ ';font-size:8px}
+.span-bar.partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b;border-top:2px solid #f59e0b}
+.span-bar.partner::before{content:'★ ';font-size:8px}
+.pl-partner{background:#fef3c7;color:#78350f;border:1px solid #f59e0b}
+/* Cal cell: no bottom padding for event area, events handled in week rows */
+.cal-day-num-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1px}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-mark">i&#945;</div>
+    <span class="logo-name">ImpactAlpha</span>
+    <span class="logo-sep">&middot;</span>
+    <span class="logo-sub">2026 Calendar</span>
+    <span class="live-pill" id="live-pill">&#9679; Live</span>
+  </div>
+  <div class="header-right">
+    <span class="save-st" id="sst"></span>
+    <div class="view-toggle">
+      <button class="vbtn active" id="btn-cal" onclick="setView('cal')">Grid</button>
+      <button class="vbtn" id="btn-list" onclick="setView('list')">List</button>
+    </div>
+    <button class="btn-g" onclick="refreshData()">&#8635; Refresh</button>
+    <button class="btn-g" onclick="exportCSV()">Export</button>
+    <button class="btn-p" onclick="openModal(null,null)">+ Add</button>
+  </div>
+</header>
+
+<div class="app-body" id="app-body" style="display:none">
+  <aside class="sidebar">
+    <input class="srch" type="text" id="search" placeholder="Search&hellip;" oninput="applyFilters()">
+    <span class="sbl">View</span>
+    <button class="fb active" data-f="all" onclick="setFilter(this,'all')"><div class="fd" style="background:#ccc"></div>All<span class="fc" id="cnt-all"></span></button>
+    <button class="fb" data-f="upcoming" onclick="setFilter(this,'upcoming')"><div class="fd" style="background:var(--gm)"></div>Upcoming<span class="fc" id="cnt-up"></span></button>
+    <span class="sbl">Type</span>
+    <button class="fb" data-f="call" onclick="setFilter(this,'call')"><div class="fd" style="background:var(--gm)"></div>Calls<span class="fc" id="cnt-call"></span></button>
+    <button class="fb" data-f="travel" onclick="setFilter(this,'travel')"><div class="fd" style="background:var(--bl)"></div>Travel<span class="fc" id="cnt-travel"></span></button>
+    <button class="fb" data-f="ooo" onclick="setFilter(this,'ooo')"><div class="fd" style="background:var(--am)"></div>Out of office<span class="fc" id="cnt-ooo"></span></button>
+    <button class="fb" data-f="event" onclick="setFilter(this,'event')"><div class="fd" style="background:#ccc"></div>Events<span class="fc" id="cnt-event"></span></button>
+    <button class="fb" data-f="partner" onclick="setFilter(this,'partner')"><div class="fd" style="background:#f59e0b"></div>Partner events</button>
+    <button class="fb" data-f="nonpartner" onclick="setFilter(this,'nonpartner')"><div class="fd" style="background:#ccc"></div>Non-partner events</button>
+    <button class="fb" data-f="discount" onclick="setFilter(this,'discount')"><div class="fd" style="background:#639922"></div>Has discount</button>
+    <span class="sbl">Topic</span>
+    <button class="fb" data-f="climate" onclick="setFilter(this,'climate')"><div class="fd" style="background:#1D9E75"></div>Climate</button>
+    <button class="fb" data-f="global" onclick="setFilter(this,'global')"><div class="fd" style="background:var(--bl)"></div>Global</button>
+    <button class="fb" data-f="inclusion" onclick="setFilter(this,'inclusion')"><div class="fd" style="background:var(--pu)"></div>Inclusion</button>
+    <button class="fb" data-f="ownership" onclick="setFilter(this,'ownership')"><div class="fd" style="background:var(--co)"></div>Ownership</button>
+    <button class="fb" data-f="energy" onclick="setFilter(this,'energy')"><div class="fd" style="background:var(--am)"></div>Energy</button>
+    <button class="fb" data-f="philanthropy" onclick="setFilter(this,'philanthropy')"><div class="fd" style="background:var(--pk)"></div>Philanthropy</button>
+    <span class="sbl">Team</span>
+    <button class="fb" data-f="Jessica" onclick="setFilter(this,'Jessica')"><div class="fd" style="background:#7e9cc8"></div>Jessica<span class="fc" id="cnt-Jessica"></span></button>
+    <button class="fb" data-f="David" onclick="setFilter(this,'David')"><div class="fd" style="background:#9c7ec8"></div>David<span class="fc" id="cnt-David"></span></button>
+    <button class="fb" data-f="Cesar" onclick="setFilter(this,'Cesar')"><div class="fd" style="background:#c87e7e"></div>Cesar<span class="fc" id="cnt-Cesar"></span></button>
+    <button class="fb" data-f="Dennis" onclick="setFilter(this,'Dennis')"><div class="fd" style="background:#c8a87e"></div>Dennis<span class="fc" id="cnt-Dennis"></span></button>
+    <button class="fb" data-f="Amy" onclick="setFilter(this,'Amy')"><div class="fd" style="background:#7ec8b4"></div>Amy<span class="fc" id="cnt-Amy"></span></button>
+    <button class="fb" data-f="Lucy" onclick="setFilter(this,'Lucy')"><div class="fd" style="background:#c8c07e"></div>Lucy<span class="fc" id="cnt-Lucy"></span></button>
+    <button class="fb" data-f="Roody" onclick="setFilter(this,'Roody')"><div class="fd" style="background:#a8c87e"></div>Roody<span class="fc" id="cnt-Roody"></span></button>
+    <button class="fb" data-f="Erik" onclick="setFilter(this,'Erik')"><div class="fd" style="background:#c87eac"></div>Erik<span class="fc" id="cnt-Erik"></span></button>
+    <span class="sbl">Stats</span>
+    <div class="sg">
+      <div class="sb"><div class="sn" id="s-total">&mdash;</div><div class="sl">Total</div></div>
+      <div class="sb"><div class="sn" id="s-up">&mdash;</div><div class="sl">Upcoming</div></div>
+      <div class="sb"><div class="sn" id="s-calls">&mdash;</div><div class="sl">Calls</div></div>
+      <div class="sb"><div class="sn" id="s-disc">&mdash;</div><div class="sl">Discounts</div></div>
+    </div>
+  </aside>
+
+  <div class="cal-area" id="cal-area">
+    <div class="month-nav">
+      <div style="display:flex;align-items:baseline;gap:4px">
+        <span class="mnt" id="mnt">May</span><span class="mns" id="mns">2026</span>
+      </div>
+      <div class="nav-arr">
+        <button class="nb" onclick="chMonth(-1)">&#8249;</button>
+        <button class="nb" onclick="goToday()">Today</button>
+        <button class="nb" onclick="chMonth(1)">&#8250;</button>
+      </div>
+    </div>
+    <div class="cal-dow">
+      <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div>
+      <div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
+    </div>
+    <div class="cal-grid-wrap"><div class="cal-grid" id="cal-grid"></div></div>
+  </div>
+
+  <div class="list-area" id="list-area"></div>
+</div>
+
+<div class="ls" id="ls"><div class="sp"></div><span>Loading&hellip;</span></div>
+
+<div class="pop-ov" id="pop-ov" onclick="closePop()"></div>
+<div class="pop" id="pop" style="display:none"></div>
+
+<div class="mo" id="mo" onclick="maybeCloseMo(event)">
+  <div class="md">
+    <div class="mh"><div class="mht" id="mht">Add item</div><button class="mc2" onclick="closeMo()">&times;</button></div>
+    <div class="mb">
+      <input type="hidden" id="eid">
+      <div class="fr"><label>Title *</label><input type="text" id="ft" placeholder="Event or call name"></div>
+      <div class="f2">
+        <div class="fr"><label>Start date *</label><input type="date" id="fs"></div>
+        <div class="fr"><label>End date</label><input type="date" id="fe"></div>
+      </div>
+      <div class="f2">
+        <div class="fr"><label>Type</label>
+          <select id="ftype" onchange="typeChg()">
+            <option value="event">External event</option>
+            <option value="call">Team call</option>
+            <option value="travel">Team travel</option>
+            <option value="ooo">Out of office</option>
+          </select>
+        </div>
+        <div class="fr" id="tag-row"><label>Topic</label>
+          <select id="ftag">
+            <option value="global">Global</option><option value="climate">Climate</option>
+            <option value="inclusion">Inclusion</option><option value="energy">Energy</option>
+            <option value="ownership">Ownership</option><option value="philanthropy">Philanthropy</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr"><label>Location</label><input type="text" id="floc" placeholder="City, country or Online"></div>
+      <div class="fr"><label>URL</label><input type="url" id="furl" placeholder="https://&hellip;"></div>
+      <div class="fr"><label>Discount code</label><input type="text" id="fdisc" placeholder="e.g. 20% off (IMPACTALPHA20)"></div>
+      <div class="fr"><label>Notes</label><textarea id="fnote" placeholder="Scheduling notes&hellip;"></textarea></div>
+      <div class="fr"><label>Team members</label><div class="tcs" id="tcs"></div></div>
+    </div>
+    <div class="mf">
+      <div class="mfl">
+        <button class="btn-g" style="color:var(--im);border-color:var(--ru)" onclick="closeMo()">Cancel</button>
+        <button class="ab del" id="del-btn" onclick="delCurrent()" style="display:none">Delete</button>
+      </div>
+      <button class="btn-p" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TODAY=new Date('2026-05-11');
+const MNS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TM=['Jessica','David','Cesar','Dennis','Amy','Lucy','Roody','Erik','Zuleyma'];
+const TC={Jessica:'#7e9cc8',David:'#9c7ec8',Cesar:'#c87e7e',Dennis:'#c8a87e',Amy:'#7ec8b4',Lucy:'#c8c07e',Roody:'#a8c87e',Erik:'#c87eac',Zuleyma:'#8ecac8'};
+const TF=['climate','global','inclusion','energy','ownership','philanthropy','general'];
+const TL={climate:'Climate',global:'Global',inclusion:'Inclusion',energy:'Energy',ownership:'Ownership',philanthropy:'Philanthropy',general:'General',call:'Call',ooo:'Out of office',travel:'Travel'};
+const DB_OK=SUPABASE_URL!=="PASTE_YOUR_SUPABASE_URL_HERE";
+let events=[],filtered=[],curF='all',curV='cal',calY=2026,calM=4;
+
+function isPast(e){return new Date(e.dateStart.replace(/-/g,'/')) < TODAY;}
+function uid(){return 'u'+Date.now()+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function setSt(m){document.getElementById('sst').textContent=m;}
+
+async function dbF(path,opts={}){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${path}`,{...opts,headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json','Prefer':opts.prefer||'',...(opts.headers||{})}});
+  if(!r.ok)throw new Error(await r.text());
+  const t=await r.text();return t?JSON.parse(t):null;
+}
+function toRow(e){return{id:e.id,title:e.title,date_start:e.dateStart,date_end:e.dateEnd||e.dateStart,type:e.type,tag:e.tag||'general',location:e.location||'',url:e.url||'',discount:e.discount||'',note:e.note||'',team:e.team||[]};}
+function frRow(r){return{id:r.id,title:r.title,dateStart:r.date_start,dateEnd:r.date_end||r.date_start,type:r.type,tag:r.tag||'general',location:r.location||'',url:r.url||'',discount:r.discount||'',note:r.note||'',team:r.team||[]};}
+async function dbLoad(){return(await dbF('ia_calendar?order=date_start.asc')).map(frRow);}
+async function dbIns(e){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(toRow(e))});}
+async function dbUpd(e){await dbF(`ia_calendar?id=eq.${e.id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify(toRow(e))});}
+async function dbDel(id){await dbF(`ia_calendar?id=eq.${id}`,{method:'DELETE'});}
+async function dbSeed(arr){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(arr.map(toRow))});}
+
+async function init(){
+  if(DB_OK){
+    try{
+      events=await dbLoad();
+      if(!events.length){await dbSeed(SEED);events=[...SEED];}
+      document.getElementById('live-pill').style.display='inline';
+    }catch(e){console.error(e);events=[...SEED];setSt('⚠ DB offline');}
+  }else{
+    const s=localStorage.getItem('ia-cal');events=s?JSON.parse(s):[...SEED];
+  }
+  document.getElementById('ls').style.display='none';
+  document.getElementById('app-body').style.display='flex';
+  buildTCS(); applyFilters();
+}
+
+function setFilter(el,f){document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));el.classList.add('active');curF=f;applyFilters();}
+function applyFilters(){
+  const q=document.getElementById('search').value.toLowerCase();
+  filtered=events.filter(e=>{
+    const ms=!q||(e.title+(e.location||'')+(e.tag||'')+(e.note||'')+(e.team||[]).join(' ')).toLowerCase().includes(q);
+    let mf=true;
+    if(curF==='upcoming')mf=!isPast(e);
+    else if(['call','travel','ooo','event'].includes(curF))mf=e.type===curF;
+    else if(curF==='discount')mf=!!e.discount;
+    else if(TM.includes(curF))mf=(e.team||[]).includes(curF);
+    else if(TF.includes(curF))mf=e.tag===curF;
+    else if(curF==='partner')mf=e.type==='event'&&isPartner(e);
+    else if(curF==='nonpartner')mf=e.type==='event'&&!isPartner(e);
+    return ms&&mf;
+  });
+  updCounts(); render();
+}
+function updCounts(){
+  const c=fn=>events.filter(fn).length;
+  const s=id=>v=>document.getElementById(id)&&(document.getElementById(id).textContent=v);
+  s('cnt-all')(events.length); s('cnt-up')(c(e=>!isPast(e)));
+  s('cnt-call')(c(e=>e.type==='call')); s('cnt-travel')(c(e=>e.type==='travel'));
+  s('cnt-ooo')(c(e=>e.type==='ooo')); s('cnt-event')(c(e=>e.type==='event'));
+  TM.forEach(m=>{const el=document.getElementById('cnt-'+m);if(el)el.textContent=c(e=>(e.team||[]).includes(m));});
+  s('s-total')(events.length); s('s-up')(c(e=>!isPast(e)));
+  s('s-calls')(c(e=>e.type==='call')); s('s-disc')(c(e=>!!e.discount));
+}
+
+function setView(v){
+  curV=v;
+  document.getElementById('btn-cal').classList.toggle('active',v==='cal');
+  document.getElementById('btn-list').classList.toggle('active',v==='list');
+  document.getElementById('cal-area').style.display=v==='cal'?'flex':'none';
+  document.getElementById('list-area').style.display=v==='list'?'block':'none';
+  render();
+}
+function render(){curV==='cal'?renderCal():renderList();}
+
+function chMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
+function goToday(){calY=2026;calM=4;renderCal();}
+
+function chipCls(e){
+  if(isPartner(e))return 'chip-partner chip-'+(e.tag||'general');
+
+  if(e.type==='call')return 'chip-call';
+  if(e.type==='ooo')return 'chip-ooo';
+  if(e.type==='travel')return 'chip-travel';
+  return 'chip-'+(e.tag||'general');
+}
+function onDay(y,m,d){
+  const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  return filtered.filter(e=>{const s=e.dateStart,en=e.dateEnd||e.dateStart;return ds>=s&&ds<=en;});
+}
+
+function renderCal(){
+  document.getElementById('mnt').textContent=MNS[calM];
+  document.getElementById('mns').textContent=calY;
+  const first=new Date(calY,calM,1);
+  const sdow=first.getDay();
+  const dim=new Date(calY,calM+1,0).getDate();
+  const dip=new Date(calY,calM,0).getDate();
+  const todS=`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+
+  // Build array of all days in the grid
+  const gridDays=[];
+  for(let i=sdow-1;i>=0;i--)gridDays.push({d:dip-i,thisMonth:false,ds:null});
+  for(let d=1;d<=dim;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    gridDays.push({d,thisMonth:true,ds});
+  }
+  const rem=(7-(gridDays.length)%7)%7;
+  for(let d=1;d<=rem;d++)gridDays.push({d,thisMonth:false,ds:null});
+
+  // Split into weeks
+  const weeks=[];
+  for(let i=0;i<gridDays.length;i+=7)weeks.push(gridDays.slice(i,i+7));
+
+  // For each filtered event, compute which cells it occupies
+  function eStart(e){return e.dateStart;}
+  function eEnd(e){return e.dateEnd||e.dateStart;}
+
+  // Build week-level layout
+  let html='<div style="display:flex;flex-direction:column;border-left:1px solid var(--ru)">';
+
+  weeks.forEach(week=>{
+    // Day number + add button row
+    let dayRow='<div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+    week.forEach(day=>{
+      const isT=day.ds===todS;
+      const om=!day.thisMonth;
+      dayRow+=`<div class="cc${isT?' td':''}${om?' om':''}" style="min-height:90px;display:flex;flex-direction:column">
+        <div class="cal-day-num-row">
+          <div class="dn">${day.d}</div>
+          ${day.thisMonth?`<button class="da" onclick="openModal(null,'${day.ds}')">+</button>`:''}
+        </div>
+      </div>`;
+    });
+    dayRow+='</div>';
+
+    // Event bars for this week
+    // Collect events that overlap this week
+    const weekStart=week[0].ds||week.find(d=>d.ds)?.ds;
+    const weekEnd=week[6].ds||week.slice().reverse().find(d=>d.ds)?.ds;
+    if(!weekStart||!weekEnd){html+=dayRow;return;}
+
+    const weekEvts=filtered.filter(e=>{
+      const s=eStart(e),en=eEnd(e);
+      return s<=weekEnd&&en>=weekStart;
+    }).sort((a,b)=>{
+      // sort: multi-day first, then by start
+      const aLen=(new Date(eEnd(a))-new Date(eStart(a)));
+      const bLen=(new Date(eEnd(b))-new Date(eStart(b)));
+      if(bLen!==aLen)return bLen-aLen;
+      return eStart(a).localeCompare(eStart(b));
+    });
+
+    // Assign rows to avoid overlap
+    const lanes=[];
+    const laneAssign=weekEvts.map(e=>{
+      const eS=eStart(e),eE=eEnd(e);
+      // Find cells in this week
+      const startCol=week.findIndex(d=>d.ds&&d.ds>=eS&&d.ds<=eE);
+      const endCol=7-1-[...week].reverse().findIndex(d=>d.ds&&d.ds>=eS&&d.ds<=eE);
+      if(startCol===-1)return{e,startCol:-1,endCol:-1,lane:-1};
+      // Assign lane
+      let lane=0;
+      while(lanes[lane]&&lanes[lane]>startCol)lane++;
+      lanes[lane]=endCol+1;
+      return{e,startCol,endCol,lane};
+    }).filter(x=>x.startCol!==-1);
+
+    const maxLane=laneAssign.reduce((m,x)=>Math.max(m,x.lane),0);
+
+    // Render: day cells with absolute positioned bars
+    let weekHtml='<div style="position:relative">';
+    // Day cells (just the number rows)
+    weekHtml+='<div style="display:grid;grid-template-columns:repeat(7,1fr)">';
+    week.forEach(day=>{
+      const isT=day.ds===todS;
+      const om=!day.thisMonth;
+      const paddingTop=(maxLane+1)*19+4;
+      weekHtml+=`<div class="cc${isT?' td':''}${om?' om':''}" style="min-height:${90+paddingTop}px;padding-top:${paddingTop}px">
+        <div class="cal-day-num-row">
+          <div class="dn">${day.d}</div>
+          ${day.thisMonth?`<button class="da" onclick="openModal(null,'${day.ds}')">+</button>`:''}
+        </div>
+      </div>`;
+    });
+    weekHtml+='</div>';
+
+    // Overlay bars
+    laneAssign.forEach(({e,startCol,endCol,lane})=>{
+      const isMD=eStart(e)!==eEnd(e);
+      const isStart=eStart(e)>=week[startCol].ds;
+      const isEnd=eEnd(e)<=(week[endCol].ds||weekEnd);
+      const partner=isPartner(e);
+      const cc=partner?'partner':chipCls(e).replace('chip-','');
+
+      let barClass='span-bar';
+      if(isMD){
+        if(isStart&&isEnd)barClass+=' solo';
+        else if(isStart)barClass+=' start';
+        else if(isEnd)barClass+=' end';
+        else barClass+=' mid';
+      }else{barClass+=' solo';}
+
+      if(partner)barClass+=' partner';
+      else barClass+=` chip-${chipCls(e).replace('chip-','')}`;
+
+      const colW=100/7;
+      const left=startCol*colW;
+      const width=(endCol-startCol+1)*colW;
+      const top=4+lane*19;
+      const label=isMD&&!isStart?e.title:`${partner?'':''}${e.title}`;
+
+      weekHtml+=`<div class="${barClass}" 
+        style="position:absolute;left:${left.toFixed(2)}%;width:${width.toFixed(2)}%;top:${top}px;right:${endCol===6?'0':'auto'}"
+        onclick="openPop(event,'${week[startCol].ds}')" 
+        title="${e.title}${e.location?' · '+e.location:''}"
+      >${esc(label)}</div>`;
+    });
+
+    weekHtml+='</div>';
+    html+=weekHtml;
+  });
+
+  html+='</div>';
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function openPop(evt,ds){
+  evt.stopPropagation();
+  const evts=filtered.filter(e=>{const en=e.dateEnd||e.dateStart;return ds>=e.dateStart&&ds<=en;});
+  const [y,m,d]=ds.split('-');
+  const lbl=`${MNS[+m-1]} ${+d}, ${y}`;
+  const bgMap={call:'#d1f0e4',ooo:'#fde8c0',travel:'#cfe0f5'};
+  const colMap={call:'#085041',ooo:'#633806',travel:'#0C447C'};
+  const evtH=evts.map(e=>{
+    const bg=bgMap[e.type]||'#f1efe8';const col=colMap[e.type]||'#444';
+    return `<div class="pop-ev" style="background:${bg};color:${col}" onclick="editFP('${e.id}')">
+      <div class="pop-t">${esc(e.title)}</div>
+      <div class="pop-m">${e.location?'📍'+e.location+' · ':''}${fmtR(e.dateStart,e.dateEnd)}</div>
+    </div>`;
+  }).join('');
+  const pop=document.getElementById('pop');
+  pop.innerHTML=`<div class="pop-dt">${lbl}<button class="pop-cl" onclick="closePop()">&times;</button></div>${evtH}<button class="pop-add" onclick="closePop();openModal(null,'${ds}')">+ Add on this day</button>`;
+  const x=Math.min(evt.clientX,window.innerWidth-315);
+  const y2=Math.min(evt.clientY+8,window.innerHeight-420);
+  pop.style.left=x+'px';pop.style.top=y2+'px';pop.style.display='block';
+  document.getElementById('pop-ov').classList.add('open');
+}
+function closePop(){document.getElementById('pop').style.display='none';document.getElementById('pop-ov').classList.remove('open');}
+function editFP(id){closePop();const e=events.find(x=>x.id===id);if(e)openModal(e,null);}
+
+function fmtR(s,e2){
+  if(!s)return'';const a=s.split('-'),b=(e2||s).split('-');
+  if(s===(e2||s))return MS[+a[1]-1]+' '+(+a[2]);
+  if(a[1]===b[1])return MS[+a[1]-1]+' '+(+a[2])+'&ndash;'+(+b[2]);
+  return MS[+a[1]-1]+' '+(+a[2])+' &ndash; '+MS[+b[1]-1]+' '+(+b[2]);
+}
+function pillH(e){
+  const parts=[];
+  if(e.type==='event'&&isPartner(e))parts.push('<span class="pl pl-partner">★ Partner</span>');
+
+  const k=e.type==='event'?(e.tag||'general'):e.type;
+  const l=e.type==='event'?(TL[e.tag]||e.tag):TL[e.type];
+  if(l)parts.push(`<span class="pl pl-${k}">${l}</span>`);
+  return parts.join('');
+}
+function tpH(e){return(e.team||[]).map(m=>{const c=TC[m]||'#888';return`<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${c}22;color:${c};border:1px solid ${c}44">${m}</span>`;}).join('');}
+function lrH(e){
+  const s=e.dateStart.split('-');
+  const tI=e.url?`<a href="${esc(e.url)}" target="_blank" rel="noreferrer">${esc(e.title)}</a>`:esc(e.title);
+  const disc=e.discount?`<span class="pl pl-disc">${esc(e.discount)}</span>`:'';
+  const note=e.note?`<div class="lnote">${esc(e.note)}</div>`:'';
+  const tc=e.type==='call'?'tc':e.type==='ooo'?'to':e.type==='travel'?'tt':'';
+  return`<div class="lr${isPast(e)?' past':''} ${tc}">
+    <div class="ldate"><div class="lmon">${MS[+s[1]-1]}</div><div class="lday">${+s[2]}</div></div>
+    <div class="lbody">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap">
+        <span class="ltitle">${tI}</span>${pillH(e)}${disc}${tpH(e)}
+      </div>
+      <div class="lmeta">${e.location?'📍 '+e.location:''}${e.location&&e.dateStart?' · ':''}<span>${fmtR(e.dateStart,e.dateEnd)}</span></div>
+      ${note}
+    </div>
+    <div class="lact">
+      <button class="ab" onclick="openModal(events.find(x=>x.id==='${e.id}'),null)">Edit</button>
+      <button class="ab del" onclick="delItem('${e.id}')">Delete</button>
+    </div>
+  </div>`;
+}
+function renderList(){
+  const area=document.getElementById('list-area');
+  const up=filtered.filter(e=>!isPast(e)).sort((a,b)=>a.dateStart.localeCompare(b.dateStart));
+  const past=filtered.filter(isPast).sort((a,b)=>b.dateStart.localeCompare(a.dateStart));
+  function bm(items,asc){
+    const m={};items.forEach(e=>{const k=+e.dateStart.split('-')[1]-1;if(!m[k])m[k]=[];m[k].push(e);});
+    return Object.keys(m).sort((a,b)=>asc?+a-+b:+b-+a).map(k=>`<div><div class="lmh">${MNS[k]}<span class="lmc">${m[k].length}</span></div><div class="ll">${m[k].map(lrH).join('')}</div></div>`).join('');
+  }
+  let h='';
+  if(up.length)h+=`<div style="font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--if);margin-bottom:.65rem">Upcoming &mdash; ${up.length}</div>${bm(up,true)}`;
+  if(past.length)h+=`<div class="divl"><div class="divln"></div><div class="divlt">Earlier this year &mdash; ${past.length}</div><div class="divln"></div></div>${bm(past,false)}`;
+  if(!filtered.length)h=`<div style="text-align:center;padding:3rem;color:var(--if)">No items match your filter.</div>`;
+  area.innerHTML=h;
+}
+
+let chkTm=[];
+function buildTCS(){document.getElementById('tcs').innerHTML=TM.map(m=>`<span class="tc" id="tc-${m}" onclick="togTM('${m}')">${m}</span>`).join('');}
+function togTM(m){
+  chkTm=chkTm.includes(m)?chkTm.filter(x=>x!==m):[...chkTm,m];
+  const el=document.getElementById('tc-'+m);const c=chkTm.includes(m);const col=TC[m]||'#888';
+  el.classList.toggle('checked',c);el.style.borderColor=c?col:'';el.style.background=c?col+'22':'';el.style.color=c?col:'';
+}
+function resetTM(){chkTm=[];TM.forEach(m=>{const el=document.getElementById('tc-'+m);el.classList.remove('checked');el.style.borderColor=el.style.background=el.style.color='';});}
+function typeChg(){document.getElementById('tag-row').style.opacity=document.getElementById('ftype').value==='event'?'1':'0.4';}
+
+function openModal(e,ds){
+  document.getElementById('eid').value=e?e.id:'';
+  document.getElementById('ft').value=e?e.title:'';
+  document.getElementById('fs').value=e?e.dateStart:(ds||'');
+  document.getElementById('fe').value=e?(e.dateEnd||''):'';
+  document.getElementById('ftype').value=e?e.type:'event';
+  document.getElementById('ftag').value=e?e.tag:'global';
+  document.getElementById('floc').value=e?e.location:'';
+  document.getElementById('furl').value=e?e.url:'';
+  document.getElementById('fdisc').value=e?e.discount:'';
+  document.getElementById('fnote').value=e?e.note:'';
+  resetTM();if(e)(e.team||[]).forEach(togTM);
+  document.getElementById('mht').textContent=e?'Edit item':'Add item';
+  document.getElementById('del-btn').style.display=e?'block':'none';
+  typeChg();
+  document.getElementById('mo').classList.add('open');
+  setTimeout(()=>document.getElementById('ft').focus(),50);
+}
+function closeMo(){document.getElementById('mo').classList.remove('open');}
+function maybeCloseMo(ev){if(ev.target===document.getElementById('mo'))closeMo();}
+
+async function saveItem(){
+  const title=document.getElementById('ft').value.trim();
+  const start=document.getElementById('fs').value;
+  if(!title||!start){alert('Title and start date are required.');return;}
+  const id=document.getElementById('eid').value;
+  const item={id:id||uid(),title,dateStart:start,dateEnd:document.getElementById('fe').value||start,type:document.getElementById('ftype').value,tag:document.getElementById('ftag').value,location:document.getElementById('floc').value.trim(),url:document.getElementById('furl').value.trim(),discount:document.getElementById('fdisc').value.trim(),note:document.getElementById('fnote').value.trim(),team:[...chkTm]};
+  closeMo();setSt('Saving\u2026');
+  if(id){events=events.map(e=>e.id===id?item:e);if(DB_OK)await dbUpd(item).catch(()=>setSt('\u26a0 Save failed'));}
+  else{events=[...events,item];if(DB_OK)await dbIns(item).catch(()=>setSt('\u26a0 Save failed'));}
+  if(!DB_OK)localStorage.setItem('ia-cal',JSON.stringify(events));
+  setSt('Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+  applyFilters();
+}
+async function delItem(id){
+  if(!confirm('Delete this item?'))return;
+  events=events.filter(e=>e.id!==id);
+  if(DB_OK)await dbDel(id).catch(()=>{});
+  else localStorage.setItem('ia-cal',JSON.stringify(events));
+  applyFilters();
+}
+function delCurrent(){const id=document.getElementById('eid').value;if(id){closeMo();delItem(id);}}
+async function refreshData(){
+  if(!DB_OK){applyFilters();return;}
+  setSt('Refreshing\u2026');
+  try{events=await dbLoad();setSt('Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));applyFilters();}
+  catch{setSt('\u26a0 Refresh failed');}
+}
+function exportCSV(){
+  const h=['Title','Type','Tag','Start','End','Location','Team','Discount','URL','Note'];
+  const rows=events.map(e=>[e.title,e.type,e.tag,e.dateStart,e.dateEnd||'',e.location||'',(e.team||[]).join('; '),e.discount||'',e.url||'',e.note||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent([h.join(','),...rows].join('\n'));a.download='ia-2026.csv';a.click();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeMo();closePop();}});
+
+const SEED=[
+  {id:'c1',title:"Impact First call \u2014 Caroline (Open Road)",dateStart:"2026-01-21",dateEnd:"2026-01-21",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c2',title:"Sponsored call \u2014 AI focus (Paul/Laura, LP-focused)",dateStart:"2026-02-18",dateEnd:"2026-02-18",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"RWJF / C3 series"},
+  {id:'c3',title:"ImpactLP call",dateStart:"2026-02-25",dateEnd:"2026-02-25",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Tentative"},
+  {id:'c4',title:"Sponsored call \u2014 Valuing Aging: Peter (Next50) + Preeti (JP Morgan)",dateStart:"2026-03-11",dateEnd:"2026-03-11",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c5',title:"Impact LP \u2014 internal call",dateStart:"2026-03-25",dateEnd:"2026-03-25",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c6',title:"Sponsored call \u2014 Broadstreet (community investment funds)",dateStart:"2026-04-15",dateEnd:"2026-04-15",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c7',title:"ImpactLP call",dateStart:"2026-05-06",dateEnd:"2026-05-06",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Tentative"},
+  {id:'c8',title:"Impact First call \u2014 Ceniarth",dateStart:"2026-05-27",dateEnd:"2026-05-27",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Pipeline, dealflow, database"},
+  {id:'c9',title:"Sponsored call \u2014 Insurance/housing (RWJF) or AI (Siegel)",dateStart:"2026-06-10",dateEnd:"2026-06-10",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Prudential, MassMutual, Liberty Mutual"},
+  {id:'c10',title:"Sponsored call \u2014 GP call (Exante, Juniper, Andaris)",dateStart:"2026-06-10",dateEnd:"2026-06-10",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c11',title:"Internal LP call",dateStart:"2026-06-24",dateEnd:"2026-06-24",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c12',title:"Sponsored call \u2014 Impact eval lab (faith-based)",dateStart:"2026-07-08",dateEnd:"2026-07-08",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c13',title:"Sponsored call \u2014 Healthy Youth: HopeLab",dateStart:"2026-08-26",dateEnd:"2026-08-26",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c14',title:"Sponsored call \u2014 AlTi (impact metrics)",dateStart:"2026-09-30",dateEnd:"2026-09-30",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:""},
+  {id:'c15',title:"ImpactLP call",dateStart:"2026-11-04",dateEnd:"2026-11-04",location:"",tag:"call",type:"call",team:[],url:"",discount:"",note:"Tentative"},
+  {id:'t1',title:"Jessica at Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"travel",type:"travel",team:["Jessica"],url:"https://katapultfuturefest.com/",discount:"",note:"Media partner"},
+  {id:'t2',title:"Jessica at SFi Impact Week",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"travel",type:"travel",team:["Jessica"],url:"https://www.sfiimpactsummit.com/",discount:"",note:""},
+  {id:'t3',title:"Jessica \u2014 vacation",dateStart:"2026-06-08",dateEnd:"2026-06-12",location:"",tag:"ooo",type:"ooo",team:["Jessica"],url:"",discount:"",note:""},
+  {id:'t4',title:"Jessica \u2014 working from Boston",dateStart:"2026-06-17",dateEnd:"2026-07-03",location:"Boston",tag:"travel",type:"travel",team:["Jessica"],url:"",discount:"",note:"Flying June 17 (internet uncertain). ~4pm log-off. Covering Brief proof."},
+  {id:'t5',title:"David at Milken Global Conference",dateStart:"2026-05-03",dateEnd:"2026-05-06",location:"Los Angeles",tag:"travel",type:"travel",team:["David"],url:"https://milkeninstitute.org/events",discount:"",note:""},
+  {id:'t6',title:"David \u2014 away (birthday)",dateStart:"2026-05-08",dateEnd:"2026-05-08",location:"",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:""},
+  {id:'t7',title:"Cesar & David \u2014 Peru",dateStart:"2026-05-16",dateEnd:"2026-05-29",location:"Peru",tag:"travel",type:"travel",team:["Cesar","David"],url:"",discount:"",note:""},
+  {id:'t8',title:"Cesar & David \u2014 off the grid",dateStart:"2026-05-20",dateEnd:"2026-05-24",location:"Peru",tag:"ooo",type:"ooo",team:["Cesar","David"],url:"",discount:"",note:""},
+  {id:'t9',title:"David at Big Path Capital",dateStart:"2026-05-31",dateEnd:"2026-06-03",location:"Charleston, SC",tag:"travel",type:"travel",team:["David"],url:"https://impact-capitalism.com/",discount:"",note:""},
+  {id:'t10',title:"David \u2014 off the grid (France)",dateStart:"2026-06-16",dateEnd:"2026-06-26",location:"France",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:"Walking trip"},
+  {id:'t11',title:"Cesar & David \u2014 Europe",dateStart:"2026-06-27",dateEnd:"2026-07-17",location:"Europe",tag:"travel",type:"travel",team:["Cesar","David"],url:"",discount:"",note:"David's work schedule TBD"},
+  {id:'t12',title:"ImpactAlpha summer break",dateStart:"2026-07-27",dateEnd:"2026-07-30",location:"",tag:"ooo",type:"ooo",team:["David"],url:"",discount:"",note:"No Briefs. David camping."},
+  {id:'t13',title:"David & team at SOCAP",dateStart:"2026-10-12",dateEnd:"2026-10-14",location:"Chicago",tag:"travel",type:"travel",team:["David"],url:"https://socapglobal.com/",discount:"",note:""},
+  {id:'t14',title:"David at GIIN Impact Forum",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Amsterdam",tag:"travel",type:"travel",team:["David"],url:"https://thegiin.org/events/",discount:"",note:""},
+  {id:'e1',title:"MIE National Conference",dateStart:"2026-04-27",dateEnd:"2026-04-29",location:"Atlanta",tag:"philanthropy",type:"event",team:["Cesar","David","Dennis"],url:"https://missioninvestors.org/events/2026-mie-national-conference",discount:"",note:""},
+  {id:'e2',title:"Sustainable & Impact Investments International Conference",dateStart:"2026-01-22",dateEnd:"2026-01-23",location:"Hamburg",tag:"global",type:"event",team:[],url:"https://socialimpactconference.it/",discount:"",note:""},
+  {id:'e3',title:"Convergence Conference 2026",dateStart:"2026-02-03",dateEnd:"2026-02-05",location:"Regina, Canada",tag:"global",type:"event",team:[],url:"https://www.convergence.ag/",discount:"",note:""},
+  {id:'e4',title:"Urban Institute",dateStart:"2026-02-10",dateEnd:"2026-02-10",location:"TBD",tag:"inclusion",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e5',title:"GreenBiz",dateStart:"2026-02-17",dateEnd:"2026-02-19",location:"Phoenix",tag:"climate",type:"event",team:[],url:"https://trellis.net/events/greenbiz/",discount:"",note:""},
+  {id:'e6',title:"FLII",dateStart:"2026-02-24",dateEnd:"2026-02-26",location:"M\u00e9rida",tag:"global",type:"event",team:[],url:"https://flii.org/",discount:"",note:""},
+  {id:'e7',title:"Sankalp Africa Summit",dateStart:"2026-02-25",dateEnd:"2026-02-26",location:"Nairobi",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e8',title:"Purpose Trust Ownership Conference",dateStart:"2026-02-26",dateEnd:"2026-02-27",location:"Austin",tag:"ownership",type:"event",team:[],url:"https://trustownership.org/#conference",discount:"",note:""},
+  {id:'e9',title:"Harvard Social Enterprise Conference",dateStart:"2026-02-28",dateEnd:"2026-03-01",location:"Cambridge, MA",tag:"general",type:"event",team:[],url:"https://socialenterpriseconference.net/",discount:"",note:""},
+  {id:'e10',title:"Economist Sustainability Week",dateStart:"2026-03-02",dateEnd:"2026-03-04",location:"London",tag:"climate",type:"event",team:[],url:"https://events.economist.com/sustainability-week/",discount:"",note:""},
+  {id:'e11',title:"Confluence Philanthropy Gathering",dateStart:"2026-03-03",dateEnd:"2026-03-05",location:"Asheville",tag:"philanthropy",type:"event",team:[],url:"https://confluencephilanthropy.org/16th-Practitioners-Gathering",discount:"",note:""},
+  {id:'e12',title:"MO Summit",dateStart:"2026-03-16",dateEnd:"2026-03-18",location:"Asheville",tag:"general",type:"event",team:[],url:"https://www.mo-summit.com/",discount:"",note:""},
+  {id:'e13',title:"SXSW",dateStart:"2026-03-16",dateEnd:"2026-03-18",location:"Austin",tag:"general",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e14',title:"SuperReturn",dateStart:"2026-03-16",dateEnd:"2026-03-18",location:"Miami",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e15',title:"Impact Investment Summit Asia Pacific",dateStart:"2026-03-25",dateEnd:"2026-03-26",location:"Sydney",tag:"global",type:"event",team:[],url:"https://impactinvestmentsummit.com/",discount:"",note:""},
+  {id:'e16',title:"ChangeNow Summit",dateStart:"2026-03-30",dateEnd:"2026-04-01",location:"Paris",tag:"climate",type:"event",team:[],url:"https://www.changenow.world/join-changenow-2026",discount:"",note:""},
+  {id:'e17',title:"NCEO Annual Conference",dateStart:"2026-04-06",dateEnd:"2026-04-09",location:"Milwaukee",tag:"ownership",type:"event",team:[],url:"https://annualconference.nceo.org/",discount:"",note:""},
+  {id:'e18',title:"Opal Impact Investing Forum",dateStart:"2026-04-12",dateEnd:"2026-04-14",location:"West Palm Beach",tag:"global",type:"event",team:[],url:"https://opalgroup.net/conference/impact-investing-forum-2026/",discount:"",note:""},
+  {id:'e19',title:"Impact Summit Europe (Phenix)",dateStart:"2026-04-14",dateEnd:"2026-04-15",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://impactevents.phenixcapitalgroup.com/impact-summit-europe",discount:"",note:""},
+  {id:'e20',title:"Systemic Investing Summit",dateStart:"2026-04-14",dateEnd:"2026-04-16",location:"Rio de Janeiro",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e21',title:"SF Climate Week",dateStart:"2026-04-18",dateEnd:"2026-04-26",location:"San Francisco",tag:"climate",type:"event",team:[],url:"https://www.sfclimateweek.org/",discount:"",note:""},
+  {id:'e22',title:"Skoll World Forum",dateStart:"2026-04-21",dateEnd:"2026-04-24",location:"Oxford, UK",tag:"global",type:"event",team:[],url:"https://skoll.org/skoll-world-forum/",discount:"",note:""},
+  {id:'e23',title:"AVCA Conference & VC Summit",dateStart:"2026-04-28",dateEnd:"2026-05-02",location:"Nairobi",tag:"global",type:"event",team:[],url:"https://www.avca.africa/events/events-calendar/annual-avca-conference/",discount:"",note:""},
+  {id:'e24',title:"Milken Global Conference",dateStart:"2026-05-03",dateEnd:"2026-05-06",location:"Los Angeles",tag:"global",type:"event",team:[],url:"https://milkeninstitute.org/events",discount:"",note:""},
+  {id:'e25',title:"LARIS 2026",dateStart:"2026-05-12",dateEnd:"2026-05-14",location:"Bogot\u00e1",tag:"climate",type:"event",team:[],url:"https://regenerativo.org/en/laris/",discount:"10% off (impactalpha)",note:""},
+  {id:'e26',title:"Total Impact Summit '26",dateStart:"2026-05-13",dateEnd:"2026-05-14",location:"Philadelphia",tag:"inclusion",type:"event",team:[],url:"https://www.impactphl.org/events-archive/tis26",discount:"",note:""},
+  {id:'e27',title:"Impact Investor Global Summit 2026",dateStart:"2026-05-19",dateEnd:"2026-05-20",location:"London",tag:"global",type:"event",team:[],url:"https://www.peievents.com/en/event/impact-investor-global-summit/",discount:"",note:""},
+  {id:'e28',title:"IAIA26",dateStart:"2026-05-19",dateEnd:"2026-05-22",location:"Qu\u00e9bec City",tag:"global",type:"event",team:[],url:"https://2026.iaia.org/",discount:"",note:""},
+  {id:'e29',title:"ProMujer GLI Forum",dateStart:"2026-05-26",dateEnd:"2026-05-28",location:"Lima",tag:"inclusion",type:"event",team:[],url:"https://gliforumlatam.com/",discount:"",note:"",partner:true},
+  {id:'e30',title:"Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://katapultfuturefest.com/",discount:"20% off (IA-FRIENDS)",note:"",partner:true},
+  {id:'e31',title:"Impact Capitalism Summit",dateStart:"2026-06-01",dateEnd:"2026-06-03",location:"TBD",tag:"global",type:"event",team:[],url:"https://impact-capitalism.com/",discount:"",note:"",partner:true},
+  {id:'e32',title:"SFi Impact Week 2026",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"global",type:"event",team:[],url:"https://www.sfiimpactsummit.com/",discount:"",note:"",partner:true},
+  {id:'e33',title:"Conference on Legal Issues \u2014 Social Enterprise",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"New York",tag:"general",type:"event",team:[],url:"https://www.law.nyu.edu/centers/grunin-social-entrepreneurship/events/allevents",discount:"",note:""},
+  {id:'e34',title:"Responsible Investor Conference",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"London",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e35',title:"SuperReturn",dateStart:"2026-06-08",dateEnd:"2026-06-12",location:"Berlin",tag:"global",type:"event",team:[],url:"",discount:"10% off (FKR3665ALPHA)",note:"",partner:true},
+  {id:'e36',title:"US SIF Annual Conference",dateStart:"2026-06-24",dateEnd:"2026-06-26",location:"Washington DC",tag:"global",type:"event",team:[],url:"https://www.ussif.org/events-and-networking/conference",discount:"",note:""},
+  {id:'e37',title:"Aspen Ideas Festival",dateStart:"2026-06-25",dateEnd:"2026-07-01",location:"Aspen",tag:"general",type:"event",team:[],url:"https://www.aspenideas.org/attend/festival",discount:"",note:""},
+  {id:'e38',title:"AI for Good Global Summit",dateStart:"2026-07-07",dateEnd:"2026-07-10",location:"Geneva",tag:"general",type:"event",team:[],url:"https://aiforgood.itu.int/summit26/passes/",discount:"",note:""},
+  {id:'e39',title:"JFF Horizons",dateStart:"2026-07-13",dateEnd:"2026-07-14",location:"Washington, DC",tag:"inclusion",type:"event",team:[],url:"https://horizons.jff.org/event/b88309b9-a935-443d-915a-66ea54289f15/home",discount:"",note:""},
+  {id:'e40',title:"ANDE Pan-Asia Convening 2026",dateStart:"2026-07-14",dateEnd:"2026-07-16",location:"Online",tag:"global",type:"event",team:[],url:"https://andeglobal.org/event/pan-asia-convening-2026/",discount:"",note:""},
+  {id:'e41',title:"GIIN Asia Impact Forum 2026",dateStart:"2026-07-31",dateEnd:"2026-07-31",location:"Singapore",tag:"global",type:"event",team:[],url:"https://thegiin.org/events/",discount:"",note:""},
+  {id:'e42',title:"AVPN Global Conference 2026",dateStart:"2026-08-25",dateEnd:"2026-08-27",location:"New Delhi",tag:"global",type:"event",team:[],url:"https://avpn.asia/conference",discount:"",note:""},
+  {id:'e43',title:"Brazilian Forum of Philanthropy",dateStart:"2026-08-27",dateEnd:"2026-08-27",location:"S\u00e3o Paulo",tag:"philanthropy",type:"event",team:[],url:"https://www.idis.org.br/forum/",discount:"",note:""},
+  {id:'e44',title:"Social Outcomes Conference 2026",dateStart:"2026-09-03",dateEnd:"2026-09-04",location:"Oxford, UK & online",tag:"global",type:"event",team:[],url:"https://golab.bsg.ox.ac.uk/community/events/soc26/",discount:"",note:""},
+  {id:'e45',title:"Latimpacto Impact Minds",dateStart:"2026-09-09",dateEnd:"2026-09-11",location:"Manaus",tag:"global",type:"event",team:[],url:"https://impactmindsconference.com/",discount:"",note:""},
+  {id:'e46',title:"ANDE Global Annual Conference 2026",dateStart:"2026-09-10",dateEnd:"2026-09-11",location:"TBC",tag:"global",type:"event",team:[],url:"https://andeglobal.org/",discount:"",note:""},
+  {id:'e47',title:"Global Renewable Energy Conference",dateStart:"2026-09-17",dateEnd:"2026-09-18",location:"Rome",tag:"energy",type:"event",team:[],url:"https://www.renewableenergyconference.org/",discount:"",note:""},
+  {id:'e48',title:"Climate Week NYC",dateStart:"2026-09-20",dateEnd:"2026-09-27",location:"New York",tag:"climate",type:"event",team:[],url:"https://www.climateweeknyc.org/",discount:"",note:""},
+  {id:'e49',title:"Enlit Asia 2026",dateStart:"2026-09-22",dateEnd:"2026-09-24",location:"BSD City, Indonesia",tag:"energy",type:"event",team:[],url:"https://www.enlit-asia.com/",discount:"",note:""},
+  {id:'e50',title:"Impact Summit America 2026 (Phenix)",dateStart:"2026-09-24",dateEnd:"2026-09-24",location:"New York",tag:"global",type:"event",team:[],url:"https://impactevents.phenixcapitalgroup.com/impact-summit-america",discount:"",note:""},
+  {id:'e51',title:"Pre-COP31 Meeting (Pacific)",dateStart:"2026-10-05",dateEnd:"2026-10-06",location:"Fiji",tag:"climate",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e52',title:"European Meeting on Renewable Energy",dateStart:"2026-10-05",dateEnd:"2026-10-06",location:"Lisbon",tag:"energy",type:"event",team:[],url:"https://renewableenergy.c2pforum.com/",discount:"",note:""},
+  {id:'e53',title:"Net Zero Conference 2026",dateStart:"2026-10-08",dateEnd:"2026-10-08",location:"Los Angeles",tag:"climate",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e54',title:"IMF / World Bank Annual Meetings",dateStart:"2026-10-12",dateEnd:"2026-10-18",location:"Bangkok",tag:"global",type:"event",team:[],url:"https://www.worldbank.org/en/meetings/splash/annual",discount:"",note:""},
+  {id:'e55',title:"SOCAP",dateStart:"2026-10-12",dateEnd:"2026-10-14",location:"Chicago",tag:"global",type:"event",team:[],url:"https://socapglobal.com/",discount:"",note:"",partner:true},
+  {id:'e56',title:"PRI in Person 2026",dateStart:"2026-10-13",dateEnd:"2026-10-15",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://public.unpri.org/news-and-events/upcoming-events/pri-in-person-2026",discount:"",note:"20th anniversary"},
+  {id:'e57',title:"Solar & Storage Live Paris",dateStart:"2026-10-14",dateEnd:"2026-10-15",location:"Paris",tag:"energy",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e58',title:"UN Biodiversity Conference",dateStart:"2026-10-19",dateEnd:"2026-10-30",location:"Yerevan, Armenia",tag:"climate",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e59',title:"GIIN Impact Forum 2026",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Amsterdam",tag:"global",type:"event",team:[],url:"https://thegiin.org/events/",discount:"",note:""},
+  {id:'e60',title:"Asia Clean Energy Summit (ACES) 2026",dateStart:"2026-10-27",dateEnd:"2026-10-29",location:"Singapore",tag:"energy",type:"event",team:[],url:"",discount:"",note:""},
+  {id:'e61',title:"FT Climate & Impact Summit Europe",dateStart:"2026-10-15",dateEnd:"2026-10-15",location:"London",tag:"climate",type:"event",team:[],url:"https://www.ft.com/events",discount:"",note:""},
+  {id:'e62',title:"COP31",dateStart:"2026-11-09",dateEnd:"2026-11-20",location:"Antalya, T\u00fcrkiye",tag:"climate",type:"event",team:[],url:"https://sdg.iisd.org/events/2026-un-climate-change-conference-unfccc-cop-31/",discount:"",note:""},
+  {id:'e63',title:"Global Alts Asia (iConnections / MFA)",dateStart:"2026-11-16",dateEnd:"2026-11-18",location:"Singapore",tag:"global",type:"event",team:[],url:"https://www.globalaltslive.com/",discount:"",note:""},
+  {id:'e64',title:"SuperReturn Africa 2026",dateStart:"2026-12-01",dateEnd:"2026-12-03",location:"Cape Town",tag:"global",type:"event",team:[],url:"https://informaconnect.com/superreturn-africa/",discount:"",note:""},
+  {id:'e65',title:"UN Water Conference",dateStart:"2026-12-02",dateEnd:"2026-12-04",location:"Abu Dhabi",tag:"climate",type:"event",team:[],url:"https://sdgs.un.org/conferences/water2026",discount:"",note:""},
+
+  {id:'ef1',title:"ReFed Food Waste Solutions Summit",dateStart:"2026-05-19",dateEnd:"2026-05-21",location:"Charlotte, NC",tag:"climate",type:"event",team:[],url:"https://summit.refed.org/",discount:"",note:"",partner:true},
+  {id:'ef2',title:"Brazil Climate Investment Week",dateStart:"2026-05-19",dateEnd:"2026-05-24",location:"São Paulo",tag:"climate",type:"event",team:[],url:"https://www.brazilclimateinvestmentweek.com/",discount:"",note:"",partner:true},
+  {id:'ef3',title:"LatAm Climate Innovation Summit",dateStart:"2026-05-26",dateEnd:"2026-05-26",location:"Mexico City",tag:"climate",type:"event",team:[],url:"https://www.climateinnovation.lat/",discount:"",note:"",partner:true},
+];
+
+const PARTNER_IDS=new Set(['e29','e30','e31','e32','e35','e55','ef1','ef2','ef3']);
+function isPartner(e){return PARTNER_IDS.has(e.id)||e.partner===true;}
+
+init();
+</script>
+</body>
+</html>
