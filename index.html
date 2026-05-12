@@ -804,10 +804,17 @@ async function init(){
   }
   document.getElementById('ls').style.display='none';
   document.getElementById('app-body').style.display='flex';
+  // Ensure clean state on load
+  activeFilters=new Set(['all']);
+  calY=2026;calM=4;
   buildTCS();
   rebuildTopicSelect();
   renderSidebarTeam();
   renderSidebarTopics();
+  // Set All button active
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  const allBtn=document.querySelector('[data-f="all"]');
+  if(allBtn)allBtn.classList.add('active');
   applyFilters();
   updCounts();
 }
@@ -1034,10 +1041,10 @@ function renderCal(){
       const isT=day.ds===todS;
       const om=!day.thisMonth;
       const paddingTop=(maxLane+1)*19+4;
-      weekHtml+=`<div class="cc${isT?' td':''}${om?' om':''}" style="min-height:${90+paddingTop}px;padding-top:${paddingTop}px">
+      weekHtml+=`<div class="cc${isT?' td':''}${om?' om':''}" style="min-height:${90+paddingTop}px;padding-top:${paddingTop}px;cursor:${day.thisMonth?'pointer':'default'}" onclick="${day.thisMonth?`openPop(event,'${day.ds}')`:''}">
         <div class="cal-day-num-row">
-          <div class="dn">${day.d}</div>
-          ${day.thisMonth?`<button class="da" onclick="openModal(null,'${day.ds}')">+</button>`:''}
+          <div class="dn" onclick="${day.thisMonth?`event.stopPropagation();openPop(event,'${day.ds}')`:''}" style="cursor:${day.thisMonth?'pointer':'default'}">${day.d}</div>
+          ${day.thisMonth?`<button class="da" onclick="event.stopPropagation();openModal(null,'${day.ds}')">+</button>`:''}
         </div>
       </div>`;
     });
@@ -1071,8 +1078,8 @@ function renderCal(){
       const labelText=showLabel?esc(e.title):'↳';
 
       weekHtml+=`<div class="${barClass}" 
-        style="position:absolute;left:${left.toFixed(2)}%;width:calc(${width.toFixed(2)}% - 1px);top:${top}px;display:flex;align-items:center;gap:2px;overflow:hidden"
-        onclick="openPop(event,'${week[startCol].ds}')" 
+        style="position:absolute;left:${left.toFixed(2)}%;width:calc(${width.toFixed(2)}% - 1px);top:${top}px;display:flex;align-items:center;gap:2px;overflow:hidden;cursor:pointer"
+        onclick="event.stopPropagation();openDetail('${e.id}')" 
         title="${e.title}${e.location?' · '+e.location:''}${(e.team||[]).length?' — '+(e.team||[]).join(', '):''}"
       ><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${labelText}</span>${showLabel?teamBadges:''}</div>`;
     });
