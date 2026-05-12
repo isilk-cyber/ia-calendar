@@ -429,6 +429,14 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
       <div class="fr"><label>Location</label><input type="text" id="floc" placeholder="City, country or Online"></div>
       <div class="fr"><label>URL</label><input type="url" id="furl" placeholder="https://&hellip;"></div>
       <div class="fr"><label>Discount code</label><input type="text" id="fdisc" placeholder="e.g. 20% off (IMPACTALPHA20)"></div>
+      <div class="fr" id="partner-row">
+        <label>Partner event</label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;background:var(--bg);border:1px solid var(--ru);border-radius:var(--r);transition:all .15s" id="partner-label">
+          <span style="font-size:16px;color:#aaa" id="partner-star">&#9734;</span>
+          <span style="flex:1;font-size:12px;color:var(--im);font-family:'Noto Sans',sans-serif">ImpactAlpha partner event</span>
+          <input type="checkbox" id="fpartner" style="width:16px;height:16px;accent-color:#f59e0b;cursor:pointer;flex-shrink:0" onchange="updatePartnerStyle()">
+        </label>
+      </div>
       <div class="fr"><label>Notes</label><textarea id="fnote" placeholder="Scheduling notes&hellip;"></textarea></div>
       <div class="fr"><label>Team members</label><div class="tcs" id="tcs"></div></div>
     </div>
@@ -1128,7 +1136,12 @@ function togTM(m){
   el.classList.toggle('checked',c);el.style.borderColor=c?col:'';el.style.background=c?col+'22':'';el.style.color=c?col:'';
 }
 function resetTM(){chkTm=[];TM.forEach(m=>{const el=document.getElementById('tc-'+m);el.classList.remove('checked');el.style.borderColor=el.style.background=el.style.color='';});}
-function typeChg(){document.getElementById('tag-row').style.opacity=document.getElementById('ftype').value==='event'?'1':'0.4';}
+function typeChg(){
+  const isEv=document.getElementById('ftype').value==='event';
+  document.getElementById('tag-row').style.opacity=isEv?'1':'0.4';
+  const pr=document.getElementById('partner-row');
+  if(pr)pr.style.display=isEv?'block':'none';
+}
 
 function openModal(e,ds){
   document.getElementById('eid').value=e?e.id:'';
@@ -1140,6 +1153,8 @@ function openModal(e,ds){
   document.getElementById('floc').value=e?e.location:'';
   document.getElementById('furl').value=e?e.url:'';
   document.getElementById('fdisc').value=e?e.discount:'';
+  document.getElementById('fpartner').checked=e?isPartner(e):false;
+  updatePartnerStyle();
   document.getElementById('fnote').value=e?e.note:'';
   resetTM();if(e)(e.team||[]).forEach(togTM);
   document.getElementById('mht').textContent=e?'Edit item':'Add item';
@@ -1151,12 +1166,23 @@ function openModal(e,ds){
 function closeMo(){document.getElementById('mo').classList.remove('open');}
 function maybeCloseMo(ev){if(ev.target===document.getElementById('mo'))closeMo();}
 
+function updatePartnerStyle(){
+  const chk=document.getElementById('fpartner');
+  const lbl=document.getElementById('partner-label');
+  const star=document.getElementById('partner-star');
+  if(!chk||!lbl||!star)return;
+  const on=chk.checked;
+  lbl.style.background=on?'#fef3c7':'';
+  lbl.style.borderColor=on?'#f59e0b':'';
+  star.innerHTML=on?'&#9733;':'&#9734;';
+  star.style.color=on?'#f59e0b':'#aaa';
+}
 async function saveItem(){
   const title=document.getElementById('ft').value.trim();
   const start=document.getElementById('fs').value;
   if(!title||!start){alert('Title and start date are required.');return;}
   const id=document.getElementById('eid').value;
-  const item={id:id||uid(),title,dateStart:start,dateEnd:document.getElementById('fe').value||start,type:document.getElementById('ftype').value,tag:document.getElementById('ftag').value,location:document.getElementById('floc').value.trim(),url:document.getElementById('furl').value.trim(),discount:document.getElementById('fdisc').value.trim(),note:document.getElementById('fnote').value.trim(),team:[...chkTm]};
+  const item={id:id||uid(),title,dateStart:start,dateEnd:document.getElementById('fe').value||start,type:document.getElementById('ftype').value,tag:document.getElementById('ftag').value,location:document.getElementById('floc').value.trim(),url:document.getElementById('furl').value.trim(),discount:document.getElementById('fdisc').value.trim(),note:document.getElementById('fnote').value.trim(),team:[...chkTm],partner:document.getElementById('fpartner').checked};
   closeMo();setSt('Saving\u2026');
   if(id){events=events.map(e=>e.id===id?item:e);if(DB_OK)await dbUpd(item).catch(()=>setSt('\u26a0 Save failed'));}
   else{events=[...events,item];if(DB_OK)await dbIns(item).catch(()=>setSt('\u26a0 Save failed'));}
@@ -1281,7 +1307,7 @@ const SEED=[
 ];
 
 const PARTNER_IDS=new Set(['e29','e30','e31','e32','e35','e55','ef1','ef2','ef3']);
-function isPartner(e){return PARTNER_IDS.has(e.id)||e.partner===true;}
+function isPartner(e){return PARTNER_IDS.has(e.id)||e.partner===true||e.partner==='true';}
 
 init();
 </script>
