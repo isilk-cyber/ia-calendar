@@ -487,10 +487,18 @@ async function dbF(path,opts={}){
   const t=await r.text();return t?JSON.parse(t):null;
 }
 function toRow(e){return{id:e.id,title:e.title,date_start:e.dateStart,date_end:e.dateEnd||e.dateStart,type:e.type,tag:e.tag||'general',location:e.location||'',url:e.url||'',discount:e.discount||'',note:e.note||'',team:e.team||[]};}
-function frRow(r){return{id:r.id,title:r.title,dateStart:r.date_start,dateEnd:r.date_end||r.date_start,type:r.type,tag:r.tag||'general',location:r.location||'',url:r.url||'',discount:r.discount||'',note:r.note||'',team:r.team||[]};}
+function frRow(r){return{id:r.id,title:r.title,dateStart:r.date_start,dateEnd:r.date_end||r.date_start,type:r.type,tag:r.tag||'general',location:r.location||'',url:r.url||'',discount:r.discount||'',note:r.note||'',team:r.team||[],partner:r.partner===true};}
 async function dbLoad(){return(await dbF('ia_calendar?order=date_start.asc')).map(frRow);}
 async function dbIns(e){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(toRow(e))});}
-async function dbUpd(e){await dbF(`ia_calendar?id=eq.${e.id}`,{method:'PATCH',prefer:'return=minimal',body:JSON.stringify(toRow(e))});}
+async function dbUpd(e){
+  const row=toRow(e);
+  await dbF(`ia_calendar?id=eq.${e.id}`,{
+    method:'PATCH',
+    prefer:'return=minimal',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(row)
+  });
+}
 async function dbDel(id){await dbF(`ia_calendar?id=eq.${id}`,{method:'DELETE'});}
 async function dbSeed(arr){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(arr.map(toRow))});}
 
@@ -1230,8 +1238,8 @@ async function saveItem(){
   const id=document.getElementById('eid').value;
   const item={id:id||uid(),title,dateStart:start,dateEnd:document.getElementById('fe').value||start,type:document.getElementById('ftype').value,tag:document.getElementById('ftag').value,location:document.getElementById('floc').value.trim(),url:document.getElementById('furl').value.trim(),discount:document.getElementById('fdisc').value.trim(),note:document.getElementById('fnote').value.trim(),team:[...chkTm],partner:document.getElementById('fpartner').checked};
   closeMo();setSt('Saving\u2026');
-  if(id){events=events.map(e=>e.id===id?item:e);if(DB_OK)await dbUpd(item).catch(()=>setSt('\u26a0 Save failed'));}
-  else{events=[...events,item];if(DB_OK)await dbIns(item).catch(()=>setSt('\u26a0 Save failed'));}
+  if(id){events=events.map(e=>e.id===id?item:e);if(DB_OK)await dbUpd(item).catch(e=>{console.error('Update failed:',e);setSt('\u26a0 Save failed — see console');});}
+  else{events=[...events,item];if(DB_OK)await dbIns(item).catch(e=>{console.error('Insert failed:',e);setSt('\u26a0 Save failed — see console');});}
   if(!DB_OK)localStorage.setItem('ia-cal',JSON.stringify(events));
   setSt('Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
   applyFilters();
