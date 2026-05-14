@@ -1324,10 +1324,10 @@ const SEED=[
   {id:'e26',title:"Total Impact Summit '26",dateStart:"2026-05-13",dateEnd:"2026-05-14",location:"Philadelphia",tag:"inclusion",type:"event",team:[],url:"https://www.impactphl.org/events-archive/tis26",discount:"",note:""},
   {id:'e27',title:"Impact Investor Global Summit 2026",dateStart:"2026-05-19",dateEnd:"2026-05-20",location:"London",tag:"global",type:"event",team:[],url:"https://www.peievents.com/en/event/impact-investor-global-summit/",discount:"",note:""},
   {id:'e28',title:"IAIA26",dateStart:"2026-05-19",dateEnd:"2026-05-22",location:"Qu\u00e9bec City",tag:"global",type:"event",team:[],url:"https://2026.iaia.org/",discount:"",note:""},
-  {id:'e29',title:"ProMujer GLI Forum",dateStart:"2026-05-26",dateEnd:"2026-05-28",location:"Lima",tag:"inclusion",type:"event",team:[],url:"https://gliforumlatam.com/",discount:"",note:"",partner:true},
+  {id:'e29',title:"GLI Forum Latam",dateStart:"2026-05-26",dateEnd:"2026-05-29",location:"Lima, Peru",tag:"inclusion",type:"event",team:[],url:"https://gliforumlatam.com/",discount:"15% off (IMPACTALPHAGLI26)",note:"",partner:true},
   {id:'e30',title:"Katapult Future Fest",dateStart:"2026-05-27",dateEnd:"2026-05-29",location:"Amsterdam",tag:"global",type:"event",team:["Jessica Pothering"],url:"https://katapultfuturefest.com/",discount:"20% off (IA-FRIENDS)",note:"Media partner",partner:true},
   {id:'e31',title:"Impact Capitalism Summit",dateStart:"2026-06-01",dateEnd:"2026-06-03",location:"Charleston, SC",tag:"global",type:"event",team:["David Bank"],url:"https://impact-capitalism.com/",discount:"Save $200 (IMPACTALPHA)",note:"",partner:true},
-  {id:'e32',title:"SFi Impact Week 2026",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"global",type:"event",team:[],url:"https://www.sfiimpactsummit.com/",discount:"",note:"",partner:true},
+  {id:'e32',title:"SFi Impact Week 2026 (Sustainable Finance Initiative)",dateStart:"2026-06-01",dateEnd:"2026-06-05",location:"Hong Kong",tag:"global",type:"event",team:[],url:"https://www.sfiimpactsummit.com/",discount:"",note:"",partner:true},
   {id:'e33',title:"Conference on Legal Issues \u2014 Social Enterprise",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"New York",tag:"general",type:"event",team:[],url:"https://www.law.nyu.edu/centers/grunin-social-entrepreneurship/events/allevents",discount:"",note:""},
   {id:'e34',title:"Responsible Investor Conference",dateStart:"2026-06-02",dateEnd:"2026-06-03",location:"London",tag:"global",type:"event",team:[],url:"",discount:"",note:""},
   {id:'e35',title:"SuperReturn",dateStart:"2026-06-08",dateEnd:"2026-06-12",location:"Berlin",tag:"global",type:"event",team:[],url:"",discount:"10% off (FKR3665ALPHA)",note:"",partner:true},
@@ -1365,9 +1365,15 @@ const SEED=[
   {id:'ef1',title:"ReFed Food Waste Solutions Summit",dateStart:"2026-05-19",dateEnd:"2026-05-21",location:"Charlotte, NC",tag:"climate",type:"event",team:[],url:"https://summit.refed.org/",discount:"",note:"",partner:true},
   {id:'ef2',title:"Brazil Climate Investment Week",dateStart:"2026-05-19",dateEnd:"2026-05-24",location:"São Paulo",tag:"climate",type:"event",team:[],url:"https://www.brazilclimateinvestmentweek.com/",discount:"",note:"",partner:true},
   {id:'ef3',title:"LatAm Climate Innovation Summit",dateStart:"2026-05-26",dateEnd:"2026-05-26",location:"Mexico City",tag:"climate",type:"event",team:[],url:"https://www.climateinnovation.lat/",discount:"",note:"",partner:true},
+  {id:'sr_energy',title:"SuperReturn Energy Transition",dateStart:"2026-06-08",dateEnd:"2026-06-09",location:"Berlin",tag:"energy",type:"event",team:[],url:"https://tinyurl.com/k64dxsku",discount:"10% off (FKR3665ALPHA)",note:"",partner:true},
+
+  {id:'lucy1',title:"Africa Impact Summit",dateStart:"2026-06-10",dateEnd:"2026-06-12",location:"Lusaka, Zambia",tag:"global",type:"event",team:["Lucy Ngige"],url:"",discount:"",note:"Lucy attending",partner:false},
+  {id:'lucy2',title:"Lucy — break (post Africa Impact Summit)",dateStart:"2026-06-15",dateEnd:"2026-06-19",location:"",tag:"ooo",type:"ooo",team:["Lucy Ngige"],url:"",discount:"",note:"",partner:false},
+  {id:'lucy3',title:"Adaptation Investment Summit for Africa",dateStart:"2026-06-24",dateEnd:"2026-06-25",location:"Nairobi",tag:"global",type:"event",team:["Lucy Ngige"],url:"",discount:"",note:"",partner:false},
+  {id:'lucy4',title:"IEA Summit on Clean Cooking in Africa",dateStart:"2026-07-09",dateEnd:"2026-07-10",location:"Nairobi",tag:"energy",type:"event",team:["Lucy Ngige"],url:"",discount:"",note:"",partner:false},
 ];
 
-const PARTNER_IDS=new Set(['e29','e30','e31','e32','e35','e55','ef1','ef2','ef3']);
+const PARTNER_IDS=new Set(['e29','e30','e31','e32','e35','e55','ef1','ef2','ef3','sr_energy']);
 function isPartner(e){return PARTNER_IDS.has(e.id)||e.partner===true||e.partner==='true';}
 
 init();
