@@ -451,7 +451,7 @@ body{font-family:'Noto Sans',system-ui,sans-serif;background:var(--bg);color:var
 </div>
 
 <script>
-const TODAY=new Date('2026-05-11');
+const TODAY=new Date(); TODAY.setHours(0,0,0,0);
 const MNS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const TM=['Jessica Pothering','Amy Cortese','David Bank','Cesar Chavez','Zuleyma Bebell','Dennis Price','Erik Stein','Roody Senatus','Lucy Ngige','Danielle Rossingh','Brian Walsh','Joe Whitwell'];
@@ -474,7 +474,8 @@ function getTopicLabel(key){const t=dynamicTopics.find(t=>t.key===key);return t?
 function getTopicStyle(key){const t=dynamicTopics.find(t=>t.key===key);return t||TOPIC_PALETTE.general;}
 function getInitials(name){const parts=name.trim().split(' ');return parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():name.slice(0,2).toUpperCase();}
 const DB_OK=SUPABASE_URL!=="PASTE_YOUR_SUPABASE_URL_HERE";
-let events=[],filtered=[],activeFilters=new Set(['all']),curV='cal',calY=2026,calM=4;
+const _now=new Date();
+let events=[],filtered=[],activeFilters=new Set(['all']),curV='cal',calY=_now.getFullYear(),calM=_now.getMonth();
 
 function isPast(e){return new Date(e.dateStart.replace(/-/g,'/')) < TODAY;}
 function uid(){return 'u'+Date.now()+Math.random().toString(36).slice(2,6);}
@@ -862,7 +863,7 @@ async function init(){
   document.getElementById('app-body').style.display='flex';
   // Ensure clean state on load
   activeFilters=new Set(['all']);
-  calY=2026;calM=4;
+  calY=new Date().getFullYear();calM=new Date().getMonth();
   buildTCS();
   rebuildTopicSelect();
   renderSidebarTeam();
@@ -942,7 +943,6 @@ function applyFilters(){
     }
   }
   // Reset to current month when clearing filter
-  if(activeFilters.has('all')&&q===''){calY=2026;calM=4;}
   render(); updCounts();
 }
 function updCounts(){
@@ -991,7 +991,7 @@ function render(){
 }
 
 function chMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCal();}
-function goToday(){calY=2026;calM=4;renderCal();}
+function goToday(){const n=new Date();calY=n.getFullYear();calM=n.getMonth();renderCal();}
 
 function getTopicInlineStyle(key){
   const s=getTopicStyle(key);
@@ -1017,7 +1017,7 @@ function renderCal(){
   const sdow=first.getDay();
   const dim=new Date(calY,calM+1,0).getDate();
   const dip=new Date(calY,calM,0).getDate();
-  const todS=`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+  const _t=new Date();const todS=`${_t.getFullYear()}-${String(_t.getMonth()+1).padStart(2,'0')}-${String(_t.getDate()).padStart(2,'0')}`;
 
   // Build array of all days in the grid
   const gridDays=[];
