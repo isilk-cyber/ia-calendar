@@ -490,7 +490,7 @@ async function dbF(path,opts={}){
   if(!r.ok)throw new Error(await r.text());
   const t=await r.text();return t?JSON.parse(t):null;
 }
-function toRow(e){return{id:e.id,title:e.title,date_start:e.dateStart,date_end:e.dateEnd||e.dateStart,type:e.type,tag:e.tag||'general',location:e.location||'',url:e.url||'',discount:e.discount||'',note:e.note||'',team:e.team||[]};}
+function toRow(e){return{id:e.id,title:e.title,date_start:e.dateStart,date_end:e.dateEnd||e.dateStart,type:e.type,tag:e.tag||'general',location:e.location||'',url:e.url||'',discount:e.discount||'',note:e.note||'',team:e.team||[],partner:e.partner===true||e.partner==='true'};}
 function frRow(r){return{id:r.id,title:r.title,dateStart:r.date_start,dateEnd:r.date_end||r.date_start,type:r.type,tag:r.tag||'general',location:r.location||'',url:r.url||'',discount:r.discount||'',note:r.note||'',team:r.team||[],partner:r.partner===true};}
 async function dbLoad(){return(await dbF('ia_calendar?order=date_start.asc')).map(frRow);}
 async function dbIns(e){
@@ -530,7 +530,15 @@ async function dbUpd(e){
   return text?JSON.parse(text):null;
 }
 async function dbDel(id){await dbF(`ia_calendar?id=eq.${id}`,{method:'DELETE'});}
-async function dbSeed(arr){await dbF('ia_calendar',{method:'POST',prefer:'return=minimal',body:JSON.stringify(arr.map(toRow))});}
+async function dbSeed(arr){
+  // Use upsert so existing edited rows are never overwritten
+  await dbF('ia_calendar',{
+    method:'POST',
+    prefer:'return=minimal',
+    headers:{'Content-Type':'application/json','Prefer':'return=minimal,resolution=ignore-duplicates'},
+    body:JSON.stringify(arr.map(toRow))
+  });
+}
 
 // ── SETTINGS ──────────────────────────────────────────────────────────────
 const CFG_KEY = 'ia-cal-config';
@@ -826,7 +834,13 @@ async function init(){
   if(DB_OK){
     try{
       events=await dbLoad();
-      if(!events.length){await dbSeed(SEED);events=[...SEED];}
+      if(!events.length){
+        console.log('Empty DB — seeding initial data');
+        await dbSeed(SEED);
+        events=SEED.map(e=>({...e}));
+      } else {
+        console.log('Loaded',events.length,'events from DB');
+      }
       document.getElementById('live-pill').style.display='inline';
     }catch(e){console.error(e);events=[...SEED];setSt('⚠ DB offline');}
   }else{
