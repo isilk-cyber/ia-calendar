@@ -529,7 +529,19 @@ async function dbUpd(e){
   if(!res.ok)throw new Error(`PATCH failed ${res.status}: ${text}`);
   return text?JSON.parse(text):null;
 }
-async function dbDel(id){await dbF(`ia_calendar?id=eq.${id}`,{method:'DELETE'});}
+async function dbDel(id){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/ia_calendar?id=eq.${id}`,{
+    method:'DELETE',
+    headers:{
+      'apikey':SUPABASE_ANON_KEY,
+      'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+      'Content-Type':'application/json',
+      'Prefer':'return=minimal'
+    }
+  });
+  console.log('Delete response:', res.status, id);
+  if(!res.ok){const t=await res.text();throw new Error(`DELETE failed ${res.status}: ${t}`);}
+}
 async function dbSeed(arr){
   // Use upsert so existing edited rows are never overwritten
   await dbF('ia_calendar',{
@@ -1119,13 +1131,14 @@ function renderCal(){
       const top=4+lane*19;
       const teamBadges=(e.team||[]).slice(0,3).map(m=>`<span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:${getTeamColor(m)};color:#fff;font-size:7px;font-weight:700;flex-shrink:0;margin-left:2px" title="${m}">${getInitials(m)}</span>`).join('');
       const showLabel=isStart||!isMD;
+      const discBadge=e.discount&&isStart?`<span style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:#3B6D11;color:#fff;font-size:7px;font-weight:700;flex-shrink:0;margin-left:1px" title="${e.discount}">%</span>`:'';
       const labelText=showLabel?esc(e.title):'↳';
 
       weekHtml+=`<div class="${barClass}" 
         style="position:absolute;left:${left.toFixed(2)}%;width:calc(${width.toFixed(2)}% - 1px);top:${top}px;display:flex;align-items:center;gap:2px;overflow:hidden;cursor:pointer"
         onclick="event.stopPropagation();openDetail('${e.id}')" 
         title="${e.title}${e.location?' · '+e.location:''}${(e.team||[]).length?' — '+(e.team||[]).join(', '):''}"
-      ><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${labelText}</span>${showLabel?teamBadges:''}</div>`;
+      ><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${labelText}</span>${showLabel?(teamBadges+discBadge):''}</div>`;
     });
 
     weekHtml+='</div>';
@@ -1185,7 +1198,7 @@ function tpH(e){
 function lrH(e){
   const s=e.dateStart.split('-');
   const tI=e.url?`<a href="${esc(e.url)}" target="_blank" rel="noreferrer">${esc(e.title)}</a>`:esc(e.title);
-  const disc=e.discount?`<span class="pl pl-disc">${esc(e.discount)}</span>`:'';
+  const disc=e.discount?`<span class="pl pl-disc">% ${esc(e.discount)}</span>`:'';
   const note=e.note?`<div class="lnote">${esc(e.note)}</div>`:'';
   const tc=e.type==='call'?'tc':e.type==='ooo'?'to':e.type==='travel'?'tt':'';
   return`<div class="lr${isPast(e)?' past':''} ${tc}" onclick="openDetail('${e.id}')" style="cursor:pointer">
@@ -1298,8 +1311,17 @@ async function saveItem(){
 async function delItem(id){
   if(!confirm('Delete this item?'))return;
   events=events.filter(e=>e.id!==id);
-  if(DB_OK)await dbDel(id).catch(()=>{});
-  else localStorage.setItem('ia-cal',JSON.stringify(events));
+  if(DB_OK){
+    try{
+      await dbDel(id);
+      setSt('Deleted',false);
+    }catch(e){
+      console.error('Delete failed:',e);
+      setSt('\u26a0 Delete failed — see console',true);
+    }
+  } else {
+    localStorage.setItem('ia-cal',JSON.stringify(events));
+  }
   applyFilters();
 }
 function delCurrent(){const id=document.getElementById('eid').value;if(id){closeMo();delItem(id);}}
