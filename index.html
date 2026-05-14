@@ -652,7 +652,7 @@ function openDetail(id){
 function closeDetail(){document.getElementById('detail-ov').classList.remove('open');detailEventId=null;}
 function maybeCloseDetail(ev){if(ev.target===document.getElementById('detail-ov'))closeDetail();}
 function editFromDetail(){const id=detailEventId;closeDetail();const e=events.find(x=>x.id===id);if(e)openModal(e,null);}
-function deleteFromDetail(){const id=detailEventId;closeDetail();if(id)deleteItem(id);}
+function deleteFromDetail(){const id=detailEventId;closeDetail();if(id)delItem(id);}
 
 async function loadConfig(){
   // Team is always sourced from the hardcoded TM/TC constants — never from DB.
